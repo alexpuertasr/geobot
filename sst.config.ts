@@ -18,7 +18,7 @@ export default $config({
     const slackChannel = new sst.Secret("SlackChannel");
 
     new sst.aws.Cron("CreatePartyCron", {
-      schedule: "cron(15 23 ? * MON-FRI *)",
+      schedule: "cron(15 23 ? * SUN-THU *)",
       function: {
         handler: "src/create-party.handler",
         link: [slackBotToken, slackChannel],
