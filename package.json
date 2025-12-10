@@ -3,13 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
-    "dev": "wrangler dev --test-scheduled",
-    "start": "wrangler dev --test-scheduled",
-    "cf-typegen": "wrangler types"
+    "dev": "sst dev",
+    "format": "biome format --write",
+    "lint": "biome check"
+  },
+  "dependencies": {
+    "sst": "3.17.25"
   },
   "devDependencies": {
-    "typescript": "5.9.3",
-    "wrangler": "4.53.0"
+    "@biomejs/biome": "2.3.8",
+    "@types/aws-lambda": "8.10.159",
+    "@types/node": "24.10.3",
+    "typescript": "5.9.3"
   }
 }
