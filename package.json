@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@slack/web-api": "7.13.0",
+    "@sparticuz/chromium": "143.0.0",
+    "puppeteer-core": "24.32.1",
     "sst": "3.17.25"
   },
   "devDependencies": {

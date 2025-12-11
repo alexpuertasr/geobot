@@ -5,6 +5,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "GeoguessrCookies": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GoogleMeetsLink": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "SlackBotToken": {
       "type": "sst.sst.Secret"
       "value": string
