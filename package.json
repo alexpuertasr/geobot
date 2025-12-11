@@ -8,6 +8,7 @@
     "lint": "biome check"
   },
   "dependencies": {
+    "@slack/web-api": "7.13.0",
     "sst": "3.17.25"
   },
   "devDependencies": {

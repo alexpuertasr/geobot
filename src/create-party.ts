@@ -1,24 +1,18 @@
 import { Resource } from "sst";
+import { WebClient } from "@slack/web-api";
+
+const slack = new WebClient(Resource.SlackBotToken.value);
 
 export const handler = async () => {
   try {
     console.log("🚀 Geobot started at:", new Date().toISOString());
 
-    const response = await fetch("https://slack.com/api/chat.postMessage", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${Resource.SlackBotToken.value}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        channel: Resource.SlackChannel.value,
-        text: "🚧 I'm still under development, please previous winner set the session 🏆⚙️",
-      }),
+    const result = await slack.chat.postMessage({
+      text: "🚧 I'm still under development, please previous winner set the session 🏆⚙️",
+      channel: Resource.SlackChannel.value,
     });
 
-    const result = (await response.json()) as { ok: boolean; error?: string };
-
-    if (response.ok && result.ok) {
+    if (result.ok) {
       console.log(`✅ Slack message sent successfully`);
     } else {
       console.error(`❌ Slack API error:`, result.error || "Unknown error");
