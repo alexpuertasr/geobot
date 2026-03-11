@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 /* deno-fmt-ignore-file */
+/* biome-ignore-all lint: auto-generated */
 
 declare module "sst" {
   export interface Resource {
@@ -20,6 +21,15 @@ declare module "sst" {
     "SlackChannel": {
       "type": "sst.sst.Secret"
       "value": string
+    }
+    "SlackSigningSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "StartSession": {
+      "name": string
+      "type": "sst.aws.Function"
+      "url": string
     }
   }
 }

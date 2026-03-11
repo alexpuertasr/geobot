@@ -8,6 +8,7 @@
     "lint": "biome check"
   },
   "dependencies": {
+    "@slack/bolt": "4.6.0",
     "@slack/web-api": "7.14.1",
     "@sparticuz/chromium": "143.0.4",
     "puppeteer-core": "24.39.0",

@@ -38,7 +38,30 @@ export const handler = async () => {
 
     const result = await slack.chat.postMessage({
       channel: Resource.SlackChannel.value,
-      text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}\n\n🚧 I'm still under development, please previous winner manage the session 🏆⚙️`,
+      text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
+      blocks: [
+        {
+          type: "section",
+          text: {
+            type: "mrkdwn",
+            text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
+          },
+        },
+        {
+          type: "actions",
+          elements: [
+            {
+              type: "button",
+              text: {
+                type: "plain_text",
+                text: "Start once everyone is ready!",
+              },
+              style: "primary",
+              action_id: "start_session",
+            },
+          ],
+        },
+      ],
     });
 
     if (result.ok) {

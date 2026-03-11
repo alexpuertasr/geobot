@@ -18,6 +18,13 @@ export default $config({
     const googleMeetsLink = new sst.Secret("GoogleMeetsLink");
     const slackBotToken = new sst.Secret("SlackBotToken");
     const slackChannel = new sst.Secret("SlackChannel");
+    const slackSigningSecret = new sst.Secret("SlackSigningSecret");
+
+    const startSession = new sst.aws.Function("StartSession", {
+      handler: "src/start-session.handler",
+      url: true,
+      link: [slackBotToken, slackSigningSecret],
+    });
 
     new sst.aws.CronV2("CreatePartyCron", {
       schedule: "cron(15 10 ? * MON-FRI *)",
@@ -29,7 +36,13 @@ export default $config({
         nodejs: {
           install: ["@sparticuz/chromium"],
         },
-        link: [geoguessrCookies, googleMeetsLink, slackBotToken, slackChannel],
+        link: [
+          geoguessrCookies,
+          googleMeetsLink,
+          slackBotToken,
+          slackChannel,
+          startSession,
+        ],
       },
     });
   },
