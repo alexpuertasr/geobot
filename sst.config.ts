@@ -19,8 +19,9 @@ export default $config({
     const slackBotToken = new sst.Secret("SlackBotToken");
     const slackChannel = new sst.Secret("SlackChannel");
 
-    new sst.aws.Cron("CreatePartyCron", {
-      schedule: "cron(15 23 ? * SUN-THU *)",
+    new sst.aws.CronV2("CreatePartyCron", {
+      schedule: "cron(15 10 ? * MON-FRI *)",
+      timezone: "Australia/Sydney",
       function: {
         memory: "2 GB",
         timeout: "15 minutes",
