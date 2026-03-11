@@ -1,7 +1,8 @@
-import { Resource } from "sst";
 import { WebClient } from "@slack/web-api";
-import puppeteer from "puppeteer-core";
 import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
+import { Resource } from "sst";
+
 import { parseCookies } from "./parse-cookies";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
@@ -32,7 +33,7 @@ export const handler = async () => {
     await page.waitForSelector('input[name="copy-link"]');
     const partyLink = await page.$eval(
       'input[name="copy-link"]',
-      (input: HTMLInputElement) => input.value
+      (input: HTMLInputElement) => input.value,
     );
 
     const result = await slack.chat.postMessage({

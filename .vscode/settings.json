@@ -1,0 +1,7 @@
+{
+  "json.schemas": [
+    {
+      "url": "https://biomejs.dev/schemas/2.4.6/schema.json"
+    }
+  ]
+}

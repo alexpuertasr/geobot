@@ -8,14 +8,14 @@
     "lint": "biome check"
   },
   "dependencies": {
-    "@slack/web-api": "7.13.0",
-    "@sparticuz/chromium": "143.0.0",
-    "puppeteer-core": "24.32.1",
+    "@slack/web-api": "7.14.1",
+    "@sparticuz/chromium": "143.0.4",
+    "puppeteer-core": "24.39.0",
     "sst": "3.17.25"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.8",
-    "@types/aws-lambda": "8.10.159",
+    "@biomejs/biome": "2.4.6",
+    "@types/aws-lambda": "8.10.161",
     "@types/node": "24.10.3",
     "typescript": "5.9.3"
   }
