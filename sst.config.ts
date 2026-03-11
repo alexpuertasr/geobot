@@ -21,8 +21,9 @@ export default $config({
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
     const startSession = new sst.aws.Function("StartSession", {
-      handler: "src/start-session.handler",
       url: true,
+      timeout: "30 seconds",
+      handler: "src/start-session.handler",
       link: [slackBotToken, slackSigningSecret],
     });
 
@@ -31,7 +32,7 @@ export default $config({
       timezone: "Australia/Sydney",
       function: {
         memory: "2 GB",
-        timeout: "15 minutes",
+        timeout: "5 minutes",
         handler: "src/create-party.handler",
         nodejs: {
           install: ["@sparticuz/chromium"],
