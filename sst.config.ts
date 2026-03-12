@@ -22,6 +22,7 @@ export default $config({
 
     const startSession = new sst.aws.Function("StartSession", {
       url: true,
+      runtime: "nodejs22.x",
       timeout: "30 seconds",
       handler: "src/start-session.handler",
       link: [slackBotToken, slackSigningSecret],
