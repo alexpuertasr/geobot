@@ -20,12 +20,28 @@ export default $config({
     const slackChannel = new sst.Secret("SlackChannel");
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
+    const playSession = new sst.aws.Function("PlaySession", {
+      memory: "2 GB",
+      runtime: "nodejs22.x",
+      timeout: "10 minutes",
+      handler: "src/play-session.handler",
+      nodejs: {
+        install: ["@sparticuz/chromium"],
+      },
+      link: [geoguessrCookies, slackBotToken],
+    });
+
     const startSession = new sst.aws.Function("StartSession", {
       url: true,
       runtime: "nodejs22.x",
       timeout: "30 seconds",
       handler: "src/start-session.handler",
-      link: [slackBotToken, slackSigningSecret],
+      nodejs: {
+        esbuild: {
+          external: ["@aws-sdk/client-lambda"],
+        },
+      },
+      link: [slackBotToken, slackSigningSecret, playSession],
     });
 
     new sst.aws.CronV2("CreatePartyCron", {

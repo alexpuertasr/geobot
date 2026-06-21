@@ -1,3 +1,4 @@
+import { InvokeCommand, LambdaClient } from "@aws-sdk/client-lambda";
 import { App, AwsLambdaReceiver } from "@slack/bolt";
 import { Resource } from "sst";
 
@@ -9,6 +10,8 @@ const app = new App({
   token: Resource.SlackBotToken.value,
   receiver,
 });
+
+const lambda = new LambdaClient({});
 
 app.action("start_session", async ({ client, body, ack }) => {
   await ack();
@@ -39,8 +42,16 @@ app.action("start_session", async ({ client, body, ack }) => {
   await client.chat.postMessage({
     channel,
     thread_ts: message.ts,
-    text: "🚧 I'm still under development, please previous winner manage the session 🏆⚙️",
+    text: "🎮 Starting the game — good luck everyone!",
   });
+
+  await lambda.send(
+    new InvokeCommand({
+      InvocationType: "Event",
+      FunctionName: Resource.PlaySession.name,
+      Payload: Buffer.from(JSON.stringify({ channel, threadTs: message.ts })),
+    }),
+  );
 });
 
 export const handler = receiver.toHandler();

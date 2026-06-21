@@ -14,6 +14,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "PlaySession": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "SlackBotToken": {
       "type": "sst.sst.Secret"
       "value": string
