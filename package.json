@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "sst dev",
-    "format": "biome format --write",
-    "lint": "biome check"
+    "deploy": "sst deploy",
+    "check": "biome check .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@slack/bolt": "4.6.0",
