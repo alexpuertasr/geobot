@@ -22,7 +22,7 @@ export default $config({
 
     const playSession = new sst.aws.Function("PlaySession", {
       memory: "2 GB",
-      runtime: "nodejs22.x",
+      runtime: "nodejs24.x",
       timeout: "10 minutes",
       handler: "src/play-session.handler",
       nodejs: {
@@ -33,7 +33,7 @@ export default $config({
 
     const startSession = new sst.aws.Function("StartSession", {
       url: true,
-      runtime: "nodejs22.x",
+      runtime: "nodejs24.x",
       timeout: "30 seconds",
       handler: "src/start-session.handler",
       nodejs: {
@@ -48,6 +48,7 @@ export default $config({
       schedule: "cron(15 10 ? * MON-FRI *)",
       timezone: "Australia/Sydney",
       function: {
+        runtime: "nodejs24.x",
         memory: "2 GB",
         timeout: "5 minutes",
         handler: "src/create-party.handler",
