@@ -6,6 +6,10 @@
 
 declare module "sst" {
   export interface Resource {
+    "CreateParty": {
+      "name": string
+      "type": "sst.aws.Function"
+    }
     "GeoguessrCookies": {
       "type": "sst.sst.Secret"
       "value": string
@@ -26,14 +30,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "SlackSigningSecret": {
-      "type": "sst.sst.Secret"
-      "value": string
-    }
-    "StartSession": {
+    "SlackHandler": {
       "name": string
       "type": "sst.aws.Function"
       "url": string
+    }
+    "SlackSigningSecret": {
+      "type": "sst.sst.Secret"
+      "value": string
     }
   }
 }
