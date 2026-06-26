@@ -4,7 +4,7 @@ import type { Page } from "puppeteer-core";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 
-import { parseCookies } from "./parse-cookies";
+import { parseCookies } from "../parse-cookies";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 

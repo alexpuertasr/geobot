@@ -24,7 +24,7 @@ export default $config({
       memory: "2 GB",
       runtime: "nodejs24.x",
       timeout: "10 minutes",
-      handler: "src/play-session.handler",
+      handler: "src/functions/play-session.handler",
       nodejs: {
         install: ["@sparticuz/chromium"],
         esbuild: {
@@ -38,7 +38,7 @@ export default $config({
       url: true,
       runtime: "nodejs24.x",
       timeout: "30 seconds",
-      handler: "src/start-session.handler",
+      handler: "src/functions/start-session.handler",
       nodejs: {
         esbuild: {
           external: ["@aws-sdk/client-lambda"],
@@ -54,7 +54,7 @@ export default $config({
         runtime: "nodejs24.x",
         memory: "2 GB",
         timeout: "5 minutes",
-        handler: "src/create-party.handler",
+        handler: "src/functions/create-party.handler",
         nodejs: {
           install: ["@sparticuz/chromium"],
           esbuild: {

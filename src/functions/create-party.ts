@@ -3,7 +3,7 @@ import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 
-import { parseCookies } from "./parse-cookies";
+import { parseCookies } from "../parse-cookies";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
