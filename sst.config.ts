@@ -27,6 +27,9 @@ export default $config({
       handler: "src/play-session.handler",
       nodejs: {
         install: ["@sparticuz/chromium"],
+        esbuild: {
+          external: ["yargs"],
+        },
       },
       link: [geoguessrCookies, slackBotToken],
     });
@@ -54,6 +57,9 @@ export default $config({
         handler: "src/create-party.handler",
         nodejs: {
           install: ["@sparticuz/chromium"],
+          esbuild: {
+            external: ["yargs"],
+          },
         },
         link: [
           geoguessrCookies,
