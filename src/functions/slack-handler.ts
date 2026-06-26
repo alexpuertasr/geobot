@@ -13,6 +13,22 @@ const app = new App({
 
 const lambda = new LambdaClient({});
 
+app.command("/geobot", async ({ command, ack }) => {
+  if (command.text.trim() !== "start") {
+    await ack("Usage: `/geobot start`");
+    return;
+  }
+
+  await ack("🌍 Creating a party…");
+
+  await lambda.send(
+    new InvokeCommand({
+      InvocationType: "Event",
+      FunctionName: Resource.CreateParty.name,
+    }),
+  );
+});
+
 app.action("start_session", async ({ client, body, ack }) => {
   await ack();
 
