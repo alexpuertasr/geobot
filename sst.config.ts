@@ -50,7 +50,9 @@ export default $config({
 
     new sst.aws.Function("SlackHandler", {
       url: true,
-      runtime: "nodejs24.x",
+      // Pinned to Node 22 until slackapi/bolt-js#2970 ships: Node 24 rejects
+      // Bolt 4.7.3's callback-arity AwsLambdaReceiver handler.
+      runtime: "nodejs22.x",
       timeout: "30 seconds",
       handler: "src/functions/slack-handler.handler",
       nodejs: {
