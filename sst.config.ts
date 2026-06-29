@@ -21,6 +21,7 @@ export default $config({
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
     const playSession = new sst.aws.Function("PlaySession", {
+      url: $dev,
       memory: "2 GB",
       runtime: "nodejs24.x",
       timeout: "10 minutes",
