@@ -6,6 +6,7 @@ export const initialPageData = z.object({
   props: z.object({
     pageProps: z.object({
       party: z.object({
+        gameType: z.string(),
         gameSettings: z.object({
           mapSlug: z.string(),
           roundCount: z.number(),
