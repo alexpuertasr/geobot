@@ -20,6 +20,21 @@ export const sessionEvent = z.object({
           roundCount: z.number(),
         })
         .nullable(),
+      leaderboards: z
+        .object({
+          game: z
+            .object({
+              entries: z.array(
+                z.object({
+                  position: z.number(),
+                  name: z.string(),
+                  score: z.number(),
+                }),
+              ),
+            })
+            .nullable(),
+        })
+        .nullish(),
     })
     .nullish(),
 });

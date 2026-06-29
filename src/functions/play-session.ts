@@ -46,6 +46,11 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     await slack.chat.postMessage({ channel, thread_ts: threadTs, text });
   };
 
+  const announce = async (text: string) => {
+    if (!channel) return;
+    await slack.chat.postMessage({ channel, text });
+  };
+
   try {
     console.log("🎮 Play session started at:", new Date().toISOString());
 
@@ -101,6 +106,9 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     await page.goto("https://www.geoguessr.com/party");
 
     await new Promise<void>((resolve) => {
+      let finished = false;
+      let finishTimeout: ReturnType<typeof setTimeout>;
+
       eventEmitter.on("PartyMemberListUpdated", () => {
         void clickButton(page, "Start game");
       });
@@ -119,14 +127,35 @@ export const handler = async (event: PlaySessionEvent = {}) => {
         void clickButton(page, "Start next round");
       });
 
+      eventEmitter.on(
+        "LiveChallengeLeaderboardUpdate",
+        async (event: SessionEvent) => {
+          if (!finished) return;
+
+          const entries = event.liveChallenge?.leaderboards?.game?.entries;
+          if (!entries?.length) return;
+
+          const standings = [...entries]
+            .sort((a, b) => a.position - b.position)
+            .map((entry) => `${entry.position}. ${entry.name} — ${entry.score}`)
+            .join("\n");
+
+          await announce(`🏁 Final scores:\n${standings}`);
+
+          clearTimeout(finishTimeout);
+          resolve();
+        },
+      );
+
       eventEmitter.on("LiveChallengeFinished", (event: SessionEvent) => {
         if (event.liveChallenge?.state) {
           void notify(
-            `🏁 All ${event.liveChallenge?.state.currentRoundNumber} rounds finished. GG!`,
+            `🏁 All ${event.liveChallenge.state.currentRoundNumber} rounds finished. GG!`,
           );
         }
 
-        resolve();
+        finished = true;
+        finishTimeout = setTimeout(resolve, 60000);
       });
     });
 
