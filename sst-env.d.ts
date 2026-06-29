@@ -21,7 +21,6 @@ declare module "sst" {
     "PlaySession": {
       "name": string
       "type": "sst.aws.Function"
-      "url": string
     }
     "SlackBotToken": {
       "type": "sst.sst.Secret"
