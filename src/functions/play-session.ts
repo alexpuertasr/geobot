@@ -5,11 +5,11 @@ import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 
 import { parseCookies } from "../parse-cookies";
+import { partyEvent, partyEventPayload } from "./schemas/party-events";
+import { type SessionEvent, sessionEvent } from "./schemas/session-event";
+import { EventEmitter } from "node:events";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
-
-const TOTAL_ROUNDS = 5;
-const ROUND_DURATION_MS = 110000;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -61,6 +61,38 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     });
 
     const page = await browser.newPage();
+    const client = await page.createCDPSession();
+    const socketUrls = new Map<string, string>();
+    const eventEmitter = new EventEmitter();
+
+    await client.send("Network.enable");
+
+    client.on("Network.webSocketCreated", ({ requestId, url }) => {
+      socketUrls.set(requestId, url);
+    });
+
+    client.on("Network.webSocketFrameReceived", ({ requestId, response }) => {
+      const url = socketUrls.get(requestId) ?? "";
+
+      if (url.includes("api.geoguessr.com")) {
+        try {
+          const event = partyEvent.parse(JSON.parse(response.payloadData));
+          const payload = partyEventPayload.parse(JSON.parse(event.payload));
+          eventEmitter.emit(event.code, { ...event, payload });
+        } catch {
+          return;
+        }
+      }
+
+      if (url.includes("game-server.geoguessr.com")) {
+        try {
+          const event = sessionEvent.parse(JSON.parse(response.payloadData));
+          eventEmitter.emit(event.code, event);
+        } catch {
+          return;
+        }
+      }
+    });
 
     const cookies = parseCookies(Resource.GeoguessrCookies.value);
     const context = browser.defaultBrowserContext();
@@ -68,18 +100,35 @@ export const handler = async (event: PlaySessionEvent = {}) => {
 
     await page.goto("https://www.geoguessr.com/party");
 
-    await clickButton(page, "Start game");
-    await notify(`🎮 Round 1 of ${TOTAL_ROUNDS} started!`);
+    await new Promise<void>((resolve) => {
+      eventEmitter.on("PartyMemberListUpdated", () => {
+        void clickButton(page, "Start game");
+      });
 
-    for (let round = 2; round <= TOTAL_ROUNDS; round++) {
-      await sleep(ROUND_DURATION_MS);
-      await clickButton(page, "Start next round");
-      await notify(`🎮 Round ${round} of ${TOTAL_ROUNDS} started!`);
-    }
+      eventEmitter.on("LiveChallengeRoundStarted", (event: SessionEvent) => {
+        const state = event.liveChallenge?.state;
+        if (!state) return;
 
-    await sleep(ROUND_DURATION_MS);
+        void notify(
+          `🎮 Round ${state.currentRoundNumber} of ${state.roundCount} started!`,
+        );
+      });
 
-    await notify(`🏁 All ${TOTAL_ROUNDS} rounds finished. GG!`);
+      eventEmitter.on("LiveChallengeRoundEnded", async () => {
+        await sleep(8000);
+        void clickButton(page, "Start next round");
+      });
+
+      eventEmitter.on("LiveChallengeFinished", (event: SessionEvent) => {
+        if (event.liveChallenge?.state) {
+          void notify(
+            `🏁 All ${event.liveChallenge?.state.currentRoundNumber} rounds finished. GG!`,
+          );
+        }
+
+        resolve();
+      });
+    });
 
     return {
       statusCode: 200,

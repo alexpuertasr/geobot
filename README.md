@@ -93,6 +93,14 @@ This will:
 - Set up the cron schedule
 - Enable live development with instant updates
 
+#### Seting up puppeteer for dev
+
+```bash
+pnpx @puppeteer/browsers install chromium@latest --path /tmp/localChromium
+```
+
+After update your .env YOUR_LOCAL_CHROMIUM_PATH to point to your installed tmp local chromium
+
 ### Deployment
 
 Deploy to production:

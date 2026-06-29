@@ -26,6 +26,9 @@ export default $config({
       runtime: "nodejs24.x",
       timeout: "10 minutes",
       handler: "src/functions/play-session.handler",
+      environment: {
+        YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
+      },
       nodejs: {
         install: ["@sparticuz/chromium"],
         esbuild: {
@@ -40,6 +43,9 @@ export default $config({
       memory: "2 GB",
       timeout: "5 minutes",
       handler: "src/functions/create-party.handler",
+      environment: {
+        YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
+      },
       nodejs: {
         install: ["@sparticuz/chromium"],
         esbuild: {
