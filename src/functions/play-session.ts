@@ -9,7 +9,7 @@ import { parseCookies } from "../parse-cookies";
 const slack = new WebClient(Resource.SlackBotToken.value);
 
 const TOTAL_ROUNDS = 5;
-const ROUND_DURATION_MS = 100000;
+const ROUND_DURATION_MS = 110000;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
