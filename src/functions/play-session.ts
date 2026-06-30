@@ -84,6 +84,7 @@ export const handler = async (event: PlaySessionEvent = {}) => {
           const event = partyEvent.parse(JSON.parse(response.payloadData));
           const payload = partyEventPayload.parse(JSON.parse(event.payload));
           eventEmitter.emit(event.code, { ...event, payload });
+          console.log(`📡 ${event.code}`);
         } catch {
           return;
         }
@@ -93,6 +94,7 @@ export const handler = async (event: PlaySessionEvent = {}) => {
         try {
           const event = sessionEvent.parse(JSON.parse(response.payloadData));
           eventEmitter.emit(event.code, event);
+          console.log(`📡 ${event.code}`);
         } catch {
           return;
         }
