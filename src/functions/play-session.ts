@@ -14,23 +14,14 @@ const slack = new WebClient(Resource.SlackBotToken.value);
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function clickButton(page: Page, label: string, timeout = 60000) {
-  await page.waitForFunction(
-    (text: string) =>
-      Array.from(document.querySelectorAll("button")).some(
-        (button) =>
-          button.textContent?.trim().includes(text) && !button.disabled,
-      ),
-    { timeout },
-    label,
-  );
-
-  await page.evaluate((text: string) => {
-    const button = Array.from(document.querySelectorAll("button")).find(
-      (candidate) =>
-        candidate.textContent?.trim().includes(text) && !candidate.disabled,
-    );
-    button?.click();
-  }, label);
+  try {
+    await page.locator(`button::-p-text(${label})`).setTimeout(timeout).click();
+    console.log(`🖱️ clicked "${label}"`);
+    return true;
+  } catch {
+    console.warn(`⚠️ never clicked "${label}" within ${timeout}ms`);
+    return false;
+  }
 }
 
 type PlaySessionEvent = {
@@ -106,27 +97,28 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     await context.setCookie(...cookies);
 
     await page.goto("https://www.geoguessr.com/party");
+    await clickButton(page, "Start game");
 
     await new Promise<void>((resolve) => {
       let finished = false;
       let finishTimeout: ReturnType<typeof setTimeout>;
 
-      eventEmitter.on("PartyMemberListUpdated", () => {
-        void clickButton(page, "Start game");
-      });
-
-      eventEmitter.on("LiveChallengeRoundStarted", (event: SessionEvent) => {
+      const announceRoundStart = (event: SessionEvent) => {
         const state = event.liveChallenge?.state;
         if (!state) return;
 
         void notify(
           `🎮 Round ${state.currentRoundNumber} of ${state.roundCount} started!`,
         );
-      });
+      };
+
+      eventEmitter.on("LiveChallengeStarted", announceRoundStart);
+      eventEmitter.on("LiveChallengeRoundStarted", announceRoundStart);
 
       eventEmitter.on("LiveChallengeRoundEnded", async () => {
         await sleep(8000);
-        void clickButton(page, "Start next round");
+
+        await clickButton(page, "Start next round");
       });
 
       eventEmitter.on(
