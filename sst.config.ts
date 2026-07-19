@@ -24,7 +24,7 @@ export default $config({
       url: $dev,
       memory: "2 GB",
       runtime: "nodejs24.x",
-      timeout: "10 minutes",
+      timeout: "15 minutes",
       handler: "src/functions/play-session.handler",
       environment: {
         YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
@@ -57,9 +57,7 @@ export default $config({
 
     new sst.aws.Function("SlackHandler", {
       url: true,
-      // Pinned to Node 22 until slackapi/bolt-js#2970 ships: Node 24 rejects
-      // Bolt 4.7.3's callback-arity AwsLambdaReceiver handler.
-      runtime: "nodejs22.x",
+      runtime: "nodejs24.x",
       timeout: "30 seconds",
       handler: "src/functions/slack-handler.handler",
       nodejs: {
