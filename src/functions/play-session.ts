@@ -24,6 +24,12 @@ async function clickButton(page: Page, label: string, timeout = 60000) {
   }
 }
 
+type LiveChallenge = NonNullable<SessionEvent["liveChallenge"]>;
+type Leaderboards = NonNullable<LiveChallenge["leaderboards"]>;
+
+type Game = NonNullable<Leaderboards["game"]>;
+type Entry = NonNullable<Game>["entries"][number];
+
 type PlaySessionEvent = {
   channel?: string;
   threadTs?: string;
@@ -100,8 +106,7 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     await clickButton(page, "Start game");
 
     await new Promise<void>((resolve) => {
-      let finished = false;
-      let finishTimeout: ReturnType<typeof setTimeout>;
+      let latestEntries: Entry[] = [];
 
       const announceRoundStart = (event: SessionEvent) => {
         const state = event.liveChallenge?.state;
@@ -123,21 +128,9 @@ export const handler = async (event: PlaySessionEvent = {}) => {
 
       eventEmitter.on(
         "LiveChallengeLeaderboardUpdate",
-        async (event: SessionEvent) => {
-          if (!finished) return;
-
+        (event: SessionEvent) => {
           const entries = event.liveChallenge?.leaderboards?.game?.entries;
-          if (!entries?.length) return;
-
-          const standings = [...entries]
-            .sort((a, b) => a.position - b.position)
-            .map((entry) => `${entry.position}. ${entry.name} — ${entry.score}`)
-            .join("\n");
-
-          await announce(`🏁 Final scores:\n${standings}`);
-
-          clearTimeout(finishTimeout);
-          resolve();
+          if (entries?.length) latestEntries = entries;
         },
       );
 
@@ -148,8 +141,20 @@ export const handler = async (event: PlaySessionEvent = {}) => {
           );
         }
 
-        finished = true;
-        finishTimeout = setTimeout(resolve, 60000);
+        setTimeout(async () => {
+          if (latestEntries.length) {
+            const standings = [...latestEntries]
+              .sort((a, b) => a.position - b.position)
+              .map((entry) => {
+                return `${entry.position}. ${entry.name} — ${entry.score}`;
+              })
+              .join("\n");
+
+            await announce(`🏁 Final scores:\n${standings}`);
+          }
+
+          resolve();
+        }, 30000);
       });
     });
 
