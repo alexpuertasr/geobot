@@ -11,6 +11,7 @@ import * as z from "zod";
 import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
 
+import { initialProps } from "./schemas/initial-props";
 import { partyEvent } from "./schemas/party-events";
 import { type SessionEvent, sessionEvent } from "./schemas/session-event";
 
@@ -188,6 +189,38 @@ export const handler = async (
     await context.setCookie(...cookies);
 
     await page.goto("https://www.geoguessr.com/party");
+
+    const nextData = await page.evaluate(() => {
+      return document.getElementById("__NEXT_DATA__")?.textContent ?? null;
+    });
+
+    if (!nextData) {
+      logger.warn("📄 __NEXT_DATA__ not found on party page");
+    } else {
+      try {
+        const data: unknown = JSON.parse(nextData);
+
+        try {
+          const { pageProps } = initialProps.parse(data).props;
+          logger.info("📄 Initial props", { pageProps });
+        } catch (error) {
+          logger.error("📄 Failed to parse initial props", {
+            data,
+            reason:
+              error instanceof z.ZodError
+                ? z.prettifyError(error)
+                : String(error),
+          });
+        }
+      } catch (error) {
+        logger.error("📄 __NEXT_DATA__ unparsed", {
+          stage: "json",
+          reason: error instanceof Error ? error.message : String(error),
+          payload: nextData,
+        });
+      }
+    }
+
     await clickButton(page, "Start game");
 
     await new Promise<void>((resolve) => {
