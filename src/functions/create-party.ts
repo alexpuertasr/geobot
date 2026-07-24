@@ -1,16 +1,18 @@
 import { WebClient } from "@slack/web-api";
 import chromium from "@sparticuz/chromium";
+import type { Context } from "aws-lambda";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 
+import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
-export const handler = async () => {
-  try {
-    console.log("🚀 Geobot started at:", new Date().toISOString());
+export const handler = async (_: unknown, context: Context) => {
+  logger.addContext(context);
 
+  try {
     const executablePath = process.env.SST_DEV
       ? process.env.YOUR_LOCAL_CHROMIUM_PATH
       : await chromium.executablePath();
@@ -65,9 +67,9 @@ export const handler = async () => {
     });
 
     if (result.ok) {
-      console.log(`✅ Slack message sent successfully`);
+      logger.info(`✅ Slack message sent successfully`);
     } else {
-      console.error(`❌ Slack API error:`, result.error || "Unknown error");
+      logger.error(`❌ Slack API error:`, { error: result.error });
     }
 
     return {
@@ -75,7 +77,7 @@ export const handler = async () => {
       body: JSON.stringify({ message: "Success" }),
     };
   } catch (error) {
-    console.error(`💥 Failed to create party:`, error);
+    logger.error(`💥 Failed to create party:`, { error });
 
     return {
       statusCode: 500,

@@ -1,13 +1,18 @@
+import { EventEmitter } from "node:events";
+
 import { WebClient } from "@slack/web-api";
 import chromium from "@sparticuz/chromium";
+import type { Context } from "aws-lambda";
 import type { Page } from "puppeteer-core";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
+import * as z from "zod";
 
+import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
+
 import { partyEvent, partyEventPayload } from "./schemas/party-events";
 import { type SessionEvent, sessionEvent } from "./schemas/session-event";
-import { EventEmitter } from "node:events";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
@@ -16,10 +21,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 async function clickButton(page: Page, label: string, timeout = 60000) {
   try {
     await page.locator(`button::-p-text(${label})`).setTimeout(timeout).click();
-    console.log(`🖱️ clicked "${label}"`);
+    logger.info(`🖱️ clicked "${label}"`);
     return true;
   } catch {
-    console.warn(`⚠️ never clicked "${label}" within ${timeout}ms`);
+    logger.warn(`⚠️ never clicked "${label}" within ${timeout}ms`, {
+      url: page.url(),
+    });
+
     return false;
   }
 }
@@ -35,8 +43,13 @@ type PlaySessionEvent = {
   threadTs?: string;
 };
 
-export const handler = async (event: PlaySessionEvent = {}) => {
+export const handler = async (
+  event: PlaySessionEvent = {},
+  context: Context,
+) => {
   const { channel, threadTs } = event;
+
+  logger.addContext(context);
 
   const notify = async (text: string) => {
     if (!channel) return;
@@ -49,8 +62,6 @@ export const handler = async (event: PlaySessionEvent = {}) => {
   };
 
   try {
-    console.log("🎮 Play session started at:", new Date().toISOString());
-
     const executablePath = process.env.SST_DEV
       ? process.env.YOUR_LOCAL_CHROMIUM_PATH
       : await chromium.executablePath();
@@ -65,34 +76,107 @@ export const handler = async (event: PlaySessionEvent = {}) => {
     const page = await browser.newPage();
     const client = await page.createCDPSession();
     const socketUrls = new Map<string, string>();
+    const unknownSockets = new Set<string>();
     const eventEmitter = new EventEmitter();
+
+    const safeEmit = (code: string, event: unknown) => {
+      try {
+        eventEmitter.emit(code, event);
+      } catch (error) {
+        logger.error(`💥 Listener failed handling ${code}`, { error });
+      }
+    };
 
     await client.send("Network.enable");
 
     client.on("Network.webSocketCreated", ({ requestId, url }) => {
       socketUrls.set(requestId, url);
+      logger.info("📡 WebSocket created", { url });
+    });
+
+    client.on("Network.webSocketClosed", ({ requestId }) => {
+      const url = socketUrls.get(requestId) ?? "";
+      if (url.includes("geoguessr.com")) {
+        logger.warn("📡 WebSocket closed", { url });
+      }
+    });
+
+    client.on("Network.webSocketFrameError", ({ requestId, errorMessage }) => {
+      const url = socketUrls.get(requestId) ?? "";
+      if (url.includes("geoguessr.com")) {
+        logger.warn("📡 WebSocket frame error", { url, errorMessage });
+      }
     });
 
     client.on("Network.webSocketFrameReceived", ({ requestId, response }) => {
       const url = socketUrls.get(requestId) ?? "";
+      if (!url.includes("geoguessr.com")) return;
+
+      const knownSocket =
+        url.includes("api.geoguessr.com") ||
+        url.includes("game-server.geoguessr.com");
+
+      let data: unknown;
+      try {
+        data = JSON.parse(response.payloadData);
+
+        if (!knownSocket) {
+          if (!unknownSockets.has(url)) {
+            unknownSockets.add(url);
+            logger.warn("📡 WebSocket frame from unknown socket", {
+              url,
+              data,
+            });
+          }
+
+          return;
+        }
+      } catch (error) {
+        logger.error("📡 WebSocket frame unparsed", {
+          url,
+          stage: "json",
+          reason: error instanceof Error ? error.message : String(error),
+          payload: response.payloadData,
+          opcode: response.opcode,
+          mask: response.mask,
+        });
+
+        return;
+      }
 
       if (url.includes("api.geoguessr.com")) {
         try {
-          const event = partyEvent.parse(JSON.parse(response.payloadData));
+          const event = partyEvent.parse(data);
           const payload = partyEventPayload.parse(JSON.parse(event.payload));
-          eventEmitter.emit(event.code, { ...event, payload });
-          console.log(`📡 ${event.code}`);
-        } catch {
+          logger.info(`🛰️ ${event.code} emitted`, { data });
+          safeEmit(event.code, { ...event, payload });
+        } catch (error) {
+          logger.error(`🛰️ Failed to parse party event`, {
+            data,
+            reason:
+              error instanceof z.ZodError
+                ? z.prettifyError(error)
+                : String(error),
+          });
+
           return;
         }
       }
 
       if (url.includes("game-server.geoguessr.com")) {
         try {
-          const event = sessionEvent.parse(JSON.parse(response.payloadData));
-          eventEmitter.emit(event.code, event);
-          console.log(`📡 ${event.code}`);
-        } catch {
+          const event = sessionEvent.parse(data);
+          logger.info(`🛰️ ${event.code} emitted`, { data });
+          safeEmit(event.code, event);
+        } catch (error) {
+          logger.error(`🛰️ Failed to parse session event`, {
+            data,
+            reason:
+              error instanceof z.ZodError
+                ? z.prettifyError(error)
+                : String(error),
+          });
+
           return;
         }
       }
@@ -163,7 +247,7 @@ export const handler = async (event: PlaySessionEvent = {}) => {
       body: JSON.stringify({ message: "Success" }),
     };
   } catch (error) {
-    console.error("💥 Failed to play session:", error);
+    logger.error("💥 Failed to play session", { error });
     await notify("⚠️ Something went wrong while running the session.");
 
     return {
