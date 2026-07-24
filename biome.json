@@ -28,11 +28,22 @@
     }
   },
   "assist": {
+    "enabled": true,
     "actions": {
       "source": {
         "organizeImports": {
           "level": "on",
-          "options": { "groups": [":PACKAGE:", ":BLANK_LINE:", ":PATH:"] }
+          "options": {
+            "groups": [
+              ":NODE:",
+              ":BLANK_LINE:",
+              ":PACKAGE:",
+              ":BLANK_LINE:",
+              ["../**", "../*"],
+              ":BLANK_LINE:",
+              ["./**", "./*"]
+            ]
+          }
         }
       }
     }
