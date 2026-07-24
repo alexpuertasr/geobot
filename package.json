@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@11.16.0",
   "scripts": {
+    "prepare": "husky",
     "dev": "sst dev",
     "deploy": "sst deploy",
     "check": "biome check .",
@@ -21,8 +22,10 @@
   "devDependencies": {
     "@aws-sdk/client-lambda": "3.1090.0",
     "@biomejs/biome": "2.5.4",
+    "@commitlint/config-conventional": "21.2.0",
     "@types/aws-lambda": "8.10.162",
     "@types/node": "26.1.1",
+    "husky": "9.1.7",
     "typescript": "7.0.2"
   }
 }
