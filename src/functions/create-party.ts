@@ -1,6 +1,7 @@
 import { WebClient } from "@slack/web-api";
 import chromium from "@sparticuz/chromium";
 import type { Context } from "aws-lambda";
+import type { Browser } from "puppeteer-core";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 import * as z from "zod";
@@ -15,12 +16,14 @@ const slack = new WebClient(Resource.SlackBotToken.value);
 export const handler = async (_: unknown, context: Context) => {
   logger.addContext(context);
 
+  let browser: Browser | undefined;
+
   try {
     const executablePath = process.env.SST_DEV
       ? process.env.YOUR_LOCAL_CHROMIUM_PATH
       : await chromium.executablePath();
 
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1280, height: 720 },
       executablePath,
@@ -30,8 +33,8 @@ export const handler = async (_: unknown, context: Context) => {
     const page = await browser.newPage();
 
     const cookies = parseCookies(Resource.GeoguessrCookies.value);
-    const context = browser.defaultBrowserContext();
-    await context.setCookie(...cookies);
+    const browserContext = browser.defaultBrowserContext();
+    await browserContext.setCookie(...cookies);
 
     await page.goto("https://www.geoguessr.com/party");
 
@@ -108,5 +111,7 @@ export const handler = async (_: unknown, context: Context) => {
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to execute" }),
     };
+  } finally {
+    await browser?.close();
   }
 };

@@ -3,7 +3,7 @@ import { EventEmitter } from "node:events";
 import { WebClient } from "@slack/web-api";
 import chromium from "@sparticuz/chromium";
 import type { Context } from "aws-lambda";
-import type { Page } from "puppeteer-core";
+import type { Browser, Page } from "puppeteer-core";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
 import * as z from "zod";
@@ -11,13 +11,17 @@ import * as z from "zod";
 import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
 
-import { initialProps } from "./schemas/initial-props";
+import { initialProps, type Party } from "./schemas/initial-props";
 import { partyEvent } from "./schemas/party-events";
 import { type SessionEvent, sessionEvent } from "./schemas/session-event";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const ROUND_TRANSITION_MS = 8000;
+const FINAL_SCORE_WAIT_MS = 30000;
+const SAFETY_BUFFER_MS = 60000;
 
 async function clickButton(page: Page, label: string, timeout = 60000) {
   try {
@@ -62,12 +66,14 @@ export const handler = async (
     await slack.chat.postMessage({ channel, text });
   };
 
+  let browser: Browser | undefined;
+
   try {
     const executablePath = process.env.SST_DEV
       ? process.env.YOUR_LOCAL_CHROMIUM_PATH
       : await chromium.executablePath();
 
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1280, height: 720 },
       executablePath,
@@ -185,14 +191,16 @@ export const handler = async (
     });
 
     const cookies = parseCookies(Resource.GeoguessrCookies.value);
-    const context = browser.defaultBrowserContext();
-    await context.setCookie(...cookies);
+    const browserContext = browser.defaultBrowserContext();
+    await browserContext.setCookie(...cookies);
 
     await page.goto("https://www.geoguessr.com/party");
 
     const nextData = await page.evaluate(() => {
       return document.getElementById("__NEXT_DATA__")?.textContent ?? null;
     });
+
+    let gameSettings: Party["gameSettings"] | undefined;
 
     if (!nextData) {
       logger.warn("📄 __NEXT_DATA__ not found on party page");
@@ -203,6 +211,7 @@ export const handler = async (
         try {
           const { pageProps } = initialProps.parse(data).props;
           logger.info("📄 Initial props", { pageProps });
+          gameSettings = pageProps.party.gameSettings;
         } catch (error) {
           logger.error("📄 Failed to parse initial props", {
             data,
@@ -218,6 +227,37 @@ export const handler = async (
           reason: error instanceof Error ? error.message : String(error),
           payload: nextData,
         });
+      }
+    }
+
+    if (gameSettings) {
+      const { roundCount, roundTime } = gameSettings;
+      const remainingMs = context.getRemainingTimeInMillis();
+
+      const estimatedMs =
+        roundCount * roundTime * 1000 +
+        (roundCount - 1) * ROUND_TRANSITION_MS +
+        FINAL_SCORE_WAIT_MS +
+        SAFETY_BUFFER_MS;
+
+      if (roundTime <= 0 || estimatedMs > remainingMs) {
+        logger.warn("⏱️ Game does not fit within lambda timeout", {
+          roundCount,
+          roundTime,
+          estimatedMs,
+          remainingMs,
+        });
+
+        await notify(
+          roundTime <= 0
+            ? `⏱️ Not starting the game: rounds have no time limit, so the game could outlive me.`
+            : `⏱️ Not starting the game: ${roundCount} rounds of ${roundTime}s need ~${Math.ceil(estimatedMs / 60000)} min, but I only have ${Math.floor(remainingMs / 60000)} min left.`,
+        );
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ message: "Skipped: game too long" }),
+        };
       }
     }
 
@@ -244,7 +284,7 @@ export const handler = async (
           const state = event.liveChallenge?.state;
           if (state && state.currentRoundNumber >= state.roundCount) return;
 
-          await sleep(8000);
+          await sleep(ROUND_TRANSITION_MS);
           await clickButton(page, "Start next round");
         },
       );
@@ -277,7 +317,7 @@ export const handler = async (
           }
 
           resolve();
-        }, 30000);
+        }, FINAL_SCORE_WAIT_MS);
       });
     });
 
@@ -293,5 +333,7 @@ export const handler = async (
       statusCode: 500,
       body: JSON.stringify({ error: "Failed to execute" }),
     };
+  } finally {
+    await browser?.close();
   }
 };
