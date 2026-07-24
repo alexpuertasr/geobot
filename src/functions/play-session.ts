@@ -11,7 +11,7 @@ import * as z from "zod";
 import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
 
-import { partyEvent, partyEventPayload } from "./schemas/party-events";
+import { partyEvent } from "./schemas/party-events";
 import { type SessionEvent, sessionEvent } from "./schemas/session-event";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
@@ -147,9 +147,9 @@ export const handler = async (
       if (url.includes("api.geoguessr.com")) {
         try {
           const event = partyEvent.parse(data);
-          const payload = partyEventPayload.parse(JSON.parse(event.payload));
           logger.info(`🛰️ ${event.code} emitted`, { data });
-          safeEmit(event.code, { ...event, payload });
+          safeEmit(event.code, event);
+          return;
         } catch (error) {
           logger.error(`🛰️ Failed to parse party event`, {
             data,
@@ -168,6 +168,7 @@ export const handler = async (
           const event = sessionEvent.parse(data);
           logger.info(`🛰️ ${event.code} emitted`, { data });
           safeEmit(event.code, event);
+          return;
         } catch (error) {
           logger.error(`🛰️ Failed to parse session event`, {
             data,
@@ -204,11 +205,16 @@ export const handler = async (
       eventEmitter.on("LiveChallengeStarted", announceRoundStart);
       eventEmitter.on("LiveChallengeRoundStarted", announceRoundStart);
 
-      eventEmitter.on("LiveChallengeRoundEnded", async () => {
-        await sleep(8000);
+      eventEmitter.on(
+        "LiveChallengeRoundEnded",
+        async (event: SessionEvent) => {
+          const state = event.liveChallenge?.state;
+          if (state && state.currentRoundNumber >= state.roundCount) return;
 
-        await clickButton(page, "Start next round");
-      });
+          await sleep(8000);
+          await clickButton(page, "Start next round");
+        },
+      );
 
       eventEmitter.on(
         "LiveChallengeLeaderboardUpdate",
