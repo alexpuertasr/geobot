@@ -2,6 +2,7 @@
   "name": "geobot",
   "version": "0.0.0",
   "private": true,
+  "packageManager": "pnpm@11.16.0",
   "scripts": {
     "dev": "sst dev",
     "deploy": "sst deploy",
