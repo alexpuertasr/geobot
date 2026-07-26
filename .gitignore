@@ -31,3 +31,10 @@ yarn-error.log*
 
 # sst
 .sst
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

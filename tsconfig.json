@@ -16,6 +16,12 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src/**/*", "sst-env.d.ts", "sst.config.ts"],
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "sst-env.d.ts",
+    "sst.config.ts",
+    "playwright.config.ts"
+  ],
   "exclude": ["node_modules", ".sst"]
 }

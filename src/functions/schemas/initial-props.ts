@@ -75,6 +75,10 @@ export const minimalInitialProps = z.object({
         joinCode: z.object({
           code: z.string(),
         }),
+        gameSettings: z.object({
+          roundCount: z.number(),
+          roundTime: z.number(),
+        }),
       }),
     }),
   }),
