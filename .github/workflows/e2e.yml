@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 45
     env:
       SST_STAGE: ${{ vars.SST_STAGE }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_DEFAULT_ACCOUNT_ID: ${{ vars.CLOUDFLARE_DEFAULT_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v7
 

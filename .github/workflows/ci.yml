@@ -63,6 +63,7 @@ jobs:
   e2e:
     needs: deploy
     uses: ./.github/workflows/e2e.yml
+    secrets: inherit
     permissions:
       id-token: write
       contents: read
