@@ -20,6 +20,7 @@ app.command("/start-party", async ({ ack }) => {
     new InvokeCommand({
       InvocationType: "Event",
       FunctionName: Resource.CreateParty.name,
+      Payload: Buffer.from(JSON.stringify({ trigger: "slack" })),
     }),
   );
 });
@@ -31,7 +32,9 @@ app.command("/play-session", async ({ ack, command }) => {
     new InvokeCommand({
       InvocationType: "Event",
       FunctionName: Resource.PlaySession.name,
-      Payload: Buffer.from(JSON.stringify({ channel: command.user_id })),
+      Payload: Buffer.from(
+        JSON.stringify({ trigger: "slack", channel: command.user_id }),
+      ),
     }),
   );
 });
@@ -72,7 +75,9 @@ app.action("start_session", async ({ client, body, ack }) => {
     new InvokeCommand({
       InvocationType: "Event",
       FunctionName: Resource.PlaySession.name,
-      Payload: Buffer.from(JSON.stringify({ channel, threadTs: message.ts })),
+      Payload: Buffer.from(
+        JSON.stringify({ trigger: "slack", channel, threadTs: message.ts }),
+      ),
     }),
   );
 });

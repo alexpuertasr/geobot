@@ -44,6 +44,7 @@ type Game = NonNullable<Leaderboards["game"]>;
 type Entry = NonNullable<Game>["entries"][number];
 
 type PlaySessionEvent = {
+  trigger?: "slack" | "tests";
   channel?: string;
   threadTs?: string;
 };
@@ -55,6 +56,7 @@ export const handler = async (
   const { channel, threadTs } = event;
 
   logger.addContext(context);
+  logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
 
   const notify = async (text: string) => {
     if (!channel) return;

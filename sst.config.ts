@@ -21,7 +21,6 @@ export default $config({
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
     const playSession = new sst.aws.Function("PlaySession", {
-      url: $dev,
       memory: "2 GB",
       runtime: "nodejs24.x",
       timeout: "15 minutes",
@@ -72,6 +71,7 @@ export default $config({
       schedule: "cron(15 10 ? * MON-FRI *)",
       timezone: "Australia/Sydney",
       function: createParty.arn,
+      event: { trigger: "cron" },
     });
   },
 });

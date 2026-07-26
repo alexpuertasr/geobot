@@ -21,7 +21,9 @@ export const test = base.extend<{ geobot: Geobot }>({
           new InvokeCommand({
             InvocationType: "Event",
             FunctionName: Resource.PlaySession.name,
-            Payload: Buffer.from(JSON.stringify(event)),
+            Payload: Buffer.from(
+              JSON.stringify({ ...event, trigger: "tests" }),
+            ),
           }),
         );
       },

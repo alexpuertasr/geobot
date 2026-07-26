@@ -13,8 +13,17 @@ import { minimalInitialProps } from "./schemas/initial-props";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
-export const handler = async (_: unknown, context: Context) => {
+type CreatePartyEvent = {
+  trigger?: "cron" | "slack";
+};
+
+export const handler = async (
+  event: CreatePartyEvent = {},
+  context: Context,
+) => {
   logger.addContext(context);
+
+  logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
 
   let browser: Browser | undefined;
 
