@@ -73,5 +73,57 @@ export default $config({
       function: createParty.arn,
       event: { trigger: "cron" },
     });
+
+    const githubOidc = aws.iam.getOpenIdConnectProviderOutput({
+      url: "https://token.actions.githubusercontent.com",
+    });
+
+    const e2eRole = new aws.iam.Role("GithubE2eRole", {
+      assumeRolePolicy: $jsonStringify({
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Effect: "Allow",
+            Principal: { Federated: githubOidc.arn },
+            Action: "sts:AssumeRoleWithWebIdentity",
+            Condition: {
+              StringEquals: {
+                "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+              },
+              StringLike: {
+                "token.actions.githubusercontent.com:sub":
+                  "repo:alexpuertasr/geobot:*",
+              },
+            },
+          },
+        ],
+      }),
+    });
+
+    new aws.iam.RolePolicy("GithubE2eRolePolicy", {
+      role: e2eRole.name,
+      policy: $jsonStringify({
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Effect: "Allow",
+            Action: ["s3:GetObject", "s3:ListBucket"],
+            Resource: ["arn:aws:s3:::sst-*", "arn:aws:s3:::sst-*/*"],
+          },
+          {
+            Effect: "Allow",
+            Action: ["ssm:GetParameter", "ssm:GetParameters"],
+            Resource: "arn:aws:ssm:*:*:parameter/sst*",
+          },
+          {
+            Effect: "Allow",
+            Action: "lambda:InvokeFunction",
+            Resource: playSession.arn,
+          },
+        ],
+      }),
+    });
+
+    return { githubE2eRole: e2eRole.arn };
   },
 });
