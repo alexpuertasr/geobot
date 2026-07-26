@@ -57,3 +57,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - run: pnpm run deploy
+
+  e2e:
+    needs: deploy
+    uses: ./.github/workflows/e2e.yml
+    permissions:
+      id-token: write
+      contents: read
