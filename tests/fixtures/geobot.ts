@@ -13,7 +13,7 @@ export type Geobot = {
 
 export const test = base.extend<{ geobot: Geobot }>({
   geobot: async ({ page: _page }, use) => {
-    const lambda = new LambdaClient({ region: "ap-southeast-2" });
+    const lambda = new LambdaClient({});
 
     await use({
       playSession: async (event = {}) => {

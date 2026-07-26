@@ -93,7 +93,9 @@ aws iam create-open-id-connect-provider \
 Deploying then creates the role and prints its ARN as the `githubE2eRole` output. Set these repository variables (Settings → Secrets and variables → Actions → Variables):
 
 - `AWS_ROLE_ARN` — the `githubE2eRole` ARN from the deploy output
-- `SST_STAGE` — the stage the workflow should test against
+- `AWS_DEPLOY_ROLE_ARN` — the `githubDeployRole` ARN from the deploy output
+- `AWS_REGION` — the region the app is deployed to (must match `sst.config.ts`)
+- `SST_STAGE` — the stage the workflows deploy and test against
 
 ## Getting Started
 
