@@ -124,6 +124,34 @@ export default $config({
       }),
     });
 
-    return { githubE2eRole: e2eRole.arn };
+    const deployRole = new aws.iam.Role("GithubDeployRole", {
+      assumeRolePolicy: $jsonStringify({
+        Version: "2012-10-17",
+        Statement: [
+          {
+            Effect: "Allow",
+            Principal: { Federated: githubOidc.arn },
+            Action: "sts:AssumeRoleWithWebIdentity",
+            Condition: {
+              StringEquals: {
+                "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                "token.actions.githubusercontent.com:sub":
+                  "repo:alexpuertasr/geobot:ref:refs/heads/main",
+              },
+            },
+          },
+        ],
+      }),
+    });
+
+    new aws.iam.RolePolicyAttachment("GithubDeployRolePolicy", {
+      role: deployRole.name,
+      policyArn: "arn:aws:iam::aws:policy/AdministratorAccess",
+    });
+
+    return {
+      githubE2eRole: e2eRole.arn,
+      githubDeployRole: deployRole.arn,
+    };
   },
 });
