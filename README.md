@@ -77,6 +77,24 @@ pnpx sst secret set SlackBotToken "xoxb-your-slack-bot-token"
 pnpx sst secret set SlackChannel "#your-channel-name"
 ```
 
+### GitHub Actions (scheduled e2e)
+
+The [E2E workflow](.github/workflows/e2e.yml) runs the Playwright test on a schedule against the deployed stage, authenticating to AWS via GitHub OIDC.
+
+The OIDC provider is an account-level singleton that `sst.config.ts` only references, so it must be created once per AWS account:
+
+```bash
+aws iam create-open-id-connect-provider \
+  --url https://token.actions.githubusercontent.com \
+  --client-id-list sts.amazonaws.com \
+  --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1
+```
+
+Deploying then creates the role and prints its ARN as the `githubE2eRole` output. Set these repository variables (Settings → Secrets and variables → Actions → Variables):
+
+- `AWS_ROLE_ARN` — the `githubE2eRole` ARN from the deploy output
+- `SST_STAGE` — the stage the workflow should test against
+
 ## Getting Started
 
 ### Development
