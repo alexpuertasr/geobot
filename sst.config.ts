@@ -26,6 +26,11 @@ export default $config({
       runtime: "nodejs24.x",
       timeout: "15 minutes",
       handler: "src/functions/play-session.handler",
+      concurrency: { reserved: 1 },
+      retries: 0,
+      transform: {
+        eventInvokeConfig: { maximumEventAgeInSeconds: 60 },
+      },
       environment: {
         YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
       },
@@ -43,6 +48,11 @@ export default $config({
       memory: "2 GB",
       timeout: "5 minutes",
       handler: "src/functions/create-party.handler",
+      concurrency: { reserved: 1 },
+      retries: 0,
+      transform: {
+        eventInvokeConfig: { maximumEventAgeInSeconds: 60 },
+      },
       environment: {
         YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
       },
