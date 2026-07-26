@@ -4,7 +4,6 @@ import type { Context } from "aws-lambda";
 import type { Browser } from "puppeteer-core";
 import puppeteer from "puppeteer-core";
 import { Resource } from "sst";
-import * as z from "zod";
 
 import { logger } from "../logger";
 import { parseCookies } from "../parse-cookies";
@@ -51,29 +50,14 @@ export const handler = async (
       return document.getElementById("__NEXT_DATA__")?.textContent ?? null;
     });
 
-    let partyLink: string;
+    const data: unknown = JSON.parse(nextData ?? "");
+    const { party } = minimalInitialProps.parse(data).props.pageProps;
 
-    try {
-      const data: unknown = JSON.parse(nextData ?? "");
-      const { party } = minimalInitialProps.parse(data).props.pageProps;
-
-      partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?s=Url`;
-      logger.info("📄 Party link from __NEXT_DATA__", {
-        partyId: party.partyId,
-        partyLink,
-      });
-    } catch (error) {
-      logger.warn("📄 Failed to get party link from __NEXT_DATA__", {
-        reason:
-          error instanceof z.ZodError ? z.prettifyError(error) : String(error),
-      });
-
-      await page.waitForSelector('input[name="copy-link"]');
-      partyLink = await page.$eval(
-        'input[name="copy-link"]',
-        (input: HTMLInputElement) => input.value,
-      );
-    }
+    const partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?s=Url`;
+    logger.info("📄 Party link from __NEXT_DATA__", {
+      partyId: party.partyId,
+      partyLink,
+    });
 
     const result = await slack.chat.postMessage({
       channel: Resource.SlackChannel.value,
