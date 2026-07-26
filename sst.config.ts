@@ -10,6 +10,7 @@ export default $config({
         aws: {
           region: "ap-southeast-2",
         },
+        cloudflare: "6.15.0",
       },
     };
   },
@@ -54,8 +55,15 @@ export default $config({
       link: [geoguessrCookies, googleMeetsLink, slackBotToken, slackChannel],
     });
 
+    const slackRouter = new sst.aws.Router("SlackRouter", {
+      domain: {
+        name: "slack.geobot.alexpuertasr.dev",
+        dns: sst.cloudflare.dns(),
+      },
+    });
+
     new sst.aws.Function("SlackHandler", {
-      url: true,
+      url: { router: { instance: slackRouter } },
       runtime: "nodejs24.x",
       timeout: "30 seconds",
       handler: "src/functions/slack-handler.handler",
