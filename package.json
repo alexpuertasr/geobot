@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@11.16.0",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "prepare": "husky",
+    "postinstall": "sst install",
     "dev": "sst dev",
     "deploy": "sst deploy",
     "check": "biome check .",
