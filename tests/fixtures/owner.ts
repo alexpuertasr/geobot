@@ -1,7 +1,7 @@
 import { test as base, expect, type Page } from "@playwright/test";
 import { Resource } from "sst";
 
-import { minimalInitialProps } from "../../src/functions/schemas/initial-props";
+import { initialProps } from "../../src/functions/schemas/initial-props";
 import { parseCookies } from "../../src/parse-cookies";
 
 export type GameSettings = {
@@ -25,9 +25,7 @@ export type Owner = {
 
 const parseParty = async (page: Page) => {
   const nextData = await page.locator("#__NEXT_DATA__").textContent();
-  const initialProps = JSON.parse(nextData ?? "");
-
-  return minimalInitialProps.parse(initialProps).props.pageProps.party;
+  return initialProps.parse(JSON.parse(nextData ?? "")).props.pageProps.party;
 };
 
 const setSlider = async (page: Page, label: string, value: number) => {

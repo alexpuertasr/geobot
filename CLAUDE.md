@@ -9,13 +9,13 @@ Package manager is pnpm (`packageManager` pinned in package.json).
 - `pnpm check` — Biome lint + format check (`biome check --write .` to fix)
 - `pnpm typecheck` — `tsc --noEmit`
 
-There is no test suite. Commits must follow Conventional Commits — commitlint runs via a husky `commit-msg` hook.
+`pnpm test` (`sst shell -- playwright test`) runs a live end-to-end challenge: it creates a real GeoGuessr party and plays a real game via the deployed PlaySession Lambda — don't run it casually. Commits must follow Conventional Commits — commitlint runs via a husky `commit-msg` hook.
 
 Secrets are managed with SST: `pnpx sst secret set <Name> <value>`. The secrets are `GeoguessrCookies`, `GoogleMeetsLink`, `SlackBotToken`, `SlackChannel`, `SlackSigningSecret`.
 
-### Local puppeteer setup
+### Local puppeteer setup (PlaySession only)
 
-In `sst dev`, Lambdas run with `SST_DEV` set and use a locally installed Chromium instead of `@sparticuz/chromium`:
+In `sst dev`, PlaySession runs with `SST_DEV` set and uses a locally installed Chromium instead of `@sparticuz/chromium`:
 
 ```bash
 pnpx @puppeteer/browsers install chromium@latest --path /tmp/localChromium
@@ -29,7 +29,7 @@ A Slack bot that automates GeoGuessr party games. SST v4 (`sst.config.ts`) defin
 
 **SlackHandler** (`slack-handler.ts`) — Slack Bolt app behind a Lambda function URL. Handles the `/start-party` and `/play-session` slash commands and the `start_session` button, each of which async-invokes (`InvocationType: "Event"`) one of the other two Lambdas via the AWS SDK. It must ack within Slack's 3s window, hence the fire-and-forget invokes.
 
-**CreateParty** (`create-party.ts`) — triggered by the weekday cron (10:15 Sydney) or `/start-party`. Launches headless Chromium with GeoGuessr auth cookies, loads `geoguessr.com/party`, reads the party join code from the page's `__NEXT_DATA__` JSON (falling back to scraping the copy-link input), and posts the join link to Slack with a "start" button.
+**CreateParty** (`create-party.ts`) — triggered by the weekday cron (10:15 Sydney) or `/start-party`. No browser: `getPartyPageProps` (`src/get-party-page-props.ts`) fetches `geoguessr.com/party` over plain HTTP with the `GeoguessrCookies` header, extracts the server-rendered `__NEXT_DATA__` JSON from the HTML, and validates it with the `initialProps` schema. The handler then posts the party join link to Slack with a "start" button.
 
 **PlaySession** (`play-session.ts`) — the long-running game driver (15-minute timeout). It never scrapes game state from the DOM; instead it opens a CDP session and intercepts WebSocket frames:
 

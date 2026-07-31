@@ -45,23 +45,7 @@ export default $config({
 
     const createParty = new sst.aws.Function("CreateParty", {
       runtime: "nodejs24.x",
-      memory: "2 GB",
-      timeout: "5 minutes",
       handler: "src/functions/create-party.handler",
-      concurrency: { reserved: 1 },
-      retries: 0,
-      transform: {
-        eventInvokeConfig: { maximumEventAgeInSeconds: 60 },
-      },
-      environment: {
-        YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
-      },
-      nodejs: {
-        install: ["@sparticuz/chromium"],
-        esbuild: {
-          external: ["yargs"],
-        },
-      },
       link: [geoguessrCookies, googleMeetsLink, slackBotToken, slackChannel],
     });
 

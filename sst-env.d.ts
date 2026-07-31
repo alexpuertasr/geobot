@@ -35,6 +35,10 @@ declare module "sst" {
       "type": "sst.aws.Function"
       "url": string
     }
+    "SlackRouter": {
+      "type": "sst.aws.Router"
+      "url": string
+    }
     "SlackSigningSecret": {
       "type": "sst.sst.Secret"
       "value": string

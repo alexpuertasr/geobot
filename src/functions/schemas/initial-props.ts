@@ -67,23 +67,6 @@ const party = z.object({
   isHostLess: z.boolean(),
 });
 
-export const minimalInitialProps = z.object({
-  props: z.object({
-    pageProps: z.object({
-      party: z.object({
-        partyId: z.string(),
-        joinCode: z.object({
-          code: z.string(),
-        }),
-        gameSettings: z.object({
-          roundCount: z.number(),
-          roundTime: z.number(),
-        }),
-      }),
-    }),
-  }),
-});
-
 export const initialProps = z.object({
   props: z.object({
     pageProps: z.object({
