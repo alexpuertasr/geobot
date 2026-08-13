@@ -116,7 +116,7 @@ export default $config({
           {
             Effect: "Allow",
             Action: "lambda:InvokeFunction",
-            Resource: playSession.arn,
+            Resource: [createParty.arn, playSession.arn],
           },
         ],
       }),
