@@ -70,8 +70,7 @@ const party = z.object({
 export const initialProps = z.object({
   props: z.object({
     pageProps: z.object({
-      party,
-      currentMember: partyMember.nullish(),
+      initialParty: party,
       initialMemberInfo: z.object({
         members: z.array(partyMember),
         totalCount: z.number(),

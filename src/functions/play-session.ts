@@ -196,7 +196,9 @@ export const handler = async (
     const browserContext = browser.defaultBrowserContext();
     await browserContext.setCookie(...cookies);
 
-    await page.goto("https://www.geoguessr.com/party");
+    await page.goto("https://www.geoguessr.com/party", {
+      waitUntil: "domcontentloaded",
+    });
 
     const nextData = await page.evaluate(() => {
       return document.getElementById("__NEXT_DATA__")?.textContent ?? null;
@@ -213,7 +215,7 @@ export const handler = async (
         try {
           const { pageProps } = initialProps.parse(data).props;
           logger.info("📄 Initial props", { pageProps });
-          gameSettings = pageProps.party.gameSettings;
+          gameSettings = pageProps.initialParty.gameSettings;
         } catch (error) {
           logger.error("📄 Failed to parse initial props", {
             data,
