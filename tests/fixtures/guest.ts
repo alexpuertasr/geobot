@@ -12,7 +12,10 @@ export type Guest = {
 };
 
 export type GuestFixture = {
-  create: (name: string, joinCode: string) => Promise<Guest>;
+  create: (
+    name: string,
+    party: { joinCode: { code: string } },
+  ) => Promise<Guest>;
 };
 
 export const test = base.extend<{ guest: GuestFixture }>({
@@ -20,18 +23,18 @@ export const test = base.extend<{ guest: GuestFixture }>({
     const contexts: BrowserContext[] = [];
 
     await use({
-      create: async (name, joinCode) => {
+      create: async (name, party) => {
         const guestContext = await browser.newContext();
         contexts.push(guestContext);
 
         const guestPage = await guestContext.newPage();
 
         await guestPage.goto(
-          `https://www.geoguessr.com/join/${joinCode}?s=Url`,
+          `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`,
         );
 
         await guestPage.getByTestId("guest-nick-input").fill(name);
-        await guestPage.getByTestId("join-party-button").click();
+        await guestPage.getByRole("button", { name: "Join party" }).click();
 
         return {
           name,

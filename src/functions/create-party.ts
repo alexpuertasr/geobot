@@ -1,33 +1,49 @@
 import { WebClient } from "@slack/web-api";
-import type { Context } from "aws-lambda";
+import type { Handler } from "aws-lambda";
 import { Resource } from "sst";
+import type z from "zod";
 
-import { getPartyPageProps } from "../get-party-page-props";
 import { logger } from "../logger";
+
+import { createPartyRequest, createPartyResponse } from "./schemas/parties";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
-type CreatePartyEvent = {
-  trigger?: "cron" | "slack";
+export type CreatePartyEvent = {
+  trigger?: "cron" | "slack" | "tests";
+  options?: z.input<typeof createPartyRequest>;
 };
 
-export const handler = async (
-  event: CreatePartyEvent = {},
-  context: Context,
+export type CreatePartyResult = z.output<typeof createPartyResponse>;
+
+export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
+  event,
+  context,
 ) => {
   logger.addContext(context);
 
   logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
 
-  try {
-    const { party } = await getPartyPageProps();
+  await fetch("https://www.geoguessr.com/api/v4/parties/v2/disband", {
+    method: "DELETE",
+    headers: {
+      cookie: Resource.GeoguessrCookies.value,
+    },
+  });
 
-    const partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?s=Url`;
-    logger.info("📄 Party link", {
-      partyId: party.partyId,
-      partyLink,
-    });
+  const response = await fetch("https://www.geoguessr.com/api/v4/parties/v2", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      cookie: Resource.GeoguessrCookies.value,
+    },
+    body: JSON.stringify(createPartyRequest.parse(event.options)),
+  });
 
+  const party = createPartyResponse.parse(await response.json());
+  const partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`;
+
+  if (event.trigger === "slack") {
     const result = await slack.chat.postMessage({
       channel: Resource.SlackChannel.value,
       text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
@@ -61,17 +77,7 @@ export const handler = async (
     } else {
       logger.error(`❌ Slack API error:`, { error: result.error });
     }
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Success" }),
-    };
-  } catch (error) {
-    logger.error(`💥 Failed to create party:`, { error });
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to execute" }),
-    };
   }
+
+  return party;
 };
