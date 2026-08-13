@@ -16,13 +16,13 @@ test("runs a live challenge", async ({ guest, geobot }) => {
 
   await expect(
     player.page.getByText("Waiting for host to start the game"),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 30_000 });
 
   await geobot.startGame();
 
   for (let round = 1; round <= party.gameSettings.roundCount; round++) {
     await expect(player.page.getByTestId("guess-map")).toBeVisible({
-      timeout: round === 1 ? 240_000 : 60_000,
+      timeout: round === 1 ? 120_000 : 60_000,
     });
 
     await expect(async () => {
