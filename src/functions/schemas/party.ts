@@ -13,7 +13,6 @@ export const party = z.object({
   chatAccessToken: z.string(),
   bannedPlayerIds: z.array(z.string()).nullable(),
   mutedPlayerIds: z.array(z.string()),
-  // the parties v2 REST API sends an ISO string; the server-rendered page props send an epoch number
   expiresAt: z.union([z.number(), z.string()]),
   timestamp: z.string(),
   partySettings: z.object({
