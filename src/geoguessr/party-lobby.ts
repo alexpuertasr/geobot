@@ -5,6 +5,7 @@ import WebSocket from "ws";
 import { logger } from "../logger";
 
 export type PartyLobby = {
+  ready: Promise<void>;
   close(): void;
 };
 
@@ -28,18 +29,22 @@ export const partyLobby = ({
     headers: { cookie: cookies, origin: "https://www.geoguessr.com" },
   });
 
-  socket.once("open", () => {
-    logger.info("📡 Party lobby open", { partyId });
-    socket.send(
-      JSON.stringify({
-        code: "Subscribe",
-        topic: `partyv2:${partyId}`,
-        client: "web",
-      }),
-    );
-    heartbeat = setInterval(() => {
-      socket.send(JSON.stringify({ code: "HeartBeat" }));
-    }, 15000);
+  const ready = new Promise<void>((resolve, reject) => {
+    socket.once("open", () => {
+      logger.info("📡 Party lobby open", { partyId });
+      socket.send(
+        JSON.stringify({
+          code: "Subscribe",
+          topic: `partyv2:${partyId}`,
+          client: "web",
+        }),
+      );
+      heartbeat = setInterval(() => {
+        socket.send(JSON.stringify({ code: "HeartBeat" }));
+      }, 15000);
+      resolve();
+    });
+    socket.once("error", reject);
   });
 
   socket.on("close", (code) => {
@@ -57,6 +62,7 @@ export const partyLobby = ({
   });
 
   return {
+    ready,
     close: () => {
       if (heartbeat) clearInterval(heartbeat);
       socket.close();

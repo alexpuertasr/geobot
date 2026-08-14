@@ -45,6 +45,21 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
       headers: headers(init),
     });
 
+  const connectPartyLobby = async (partyId: string) => {
+    currentPartyLobby?.close();
+    currentPartyLobby = null;
+
+    const lobby = partyLobby({ cookies, xClient, partyId });
+
+    try {
+      await lobby.ready;
+      currentPartyLobby = lobby;
+    } catch (error) {
+      logger.error("📡 Party lobby connection failed", { partyId, error });
+      lobby.close();
+    }
+  };
+
   const refreshParty = async (): Promise<Party | null> => {
     currentParty = null;
 
@@ -72,12 +87,7 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         xClient = page.buildId ? `web-${page.buildId}` : null;
         currentParty = page.props.pageProps.initialParty ?? null;
         if (currentParty) {
-          currentPartyLobby?.close();
-          currentPartyLobby = partyLobby({
-            cookies,
-            xClient,
-            partyId: currentParty.partyId,
-          });
+          await connectPartyLobby(currentParty.partyId);
         }
       } catch (error) {
         logger.error("📄 Failed to parse party page props", {
@@ -129,13 +139,8 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
 
       try {
         party = createPartyResponse.parse(body);
+        await connectPartyLobby(party.partyId);
         currentParty = party;
-        currentPartyLobby?.close();
-        currentPartyLobby = partyLobby({
-          cookies,
-          xClient,
-          partyId: currentParty.partyId,
-        });
       } catch (error) {
         logger.error("🎉 Unexpected create-party response", {
           status: response.status,
