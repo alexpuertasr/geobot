@@ -33,6 +33,7 @@ export const gameLobby = ({
 }): GameLobby => {
   const emitter = new EventEmitter();
   let heartbeat: ReturnType<typeof setInterval> | undefined;
+  let closedByClient = false;
 
   const params = new URLSearchParams({
     ...(xClient ? { c: xClient } : {}),
@@ -56,6 +57,12 @@ export const gameLobby = ({
   socket.on("close", (code) => {
     if (heartbeat) clearInterval(heartbeat);
     logger.warn("📡 Game lobby closed", { gameId, code });
+    if (!closedByClient) {
+      emitter.emit(
+        "error",
+        new Error(`Game lobby socket closed with code ${code}`),
+      );
+    }
   });
 
   socket.on("error", (error) => {
@@ -105,6 +112,7 @@ export const gameLobby = ({
       emitter.on("error", listener);
     },
     close: () => {
+      closedByClient = true;
       if (heartbeat) clearInterval(heartbeat);
       socket.close();
     },
