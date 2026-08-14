@@ -18,7 +18,7 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
-    "PlaySession": {
+    "PlayGame": {
       "name": string
       "type": "sst.aws.Function"
     }

@@ -9,7 +9,7 @@ Package manager is pnpm (`packageManager` pinned in package.json).
 - `pnpm check` — Biome lint + format check (`biome check --write .` to fix)
 - `pnpm typecheck` — `tsc --noEmit`
 
-`pnpm test` (`sst shell -- playwright test`) runs a live end-to-end challenge: it creates a real GeoGuessr party and plays a real game via the deployed PlaySession Lambda — don't run it casually. Commits must follow Conventional Commits — commitlint runs via a husky `commit-msg` hook.
+`pnpm test` (`sst shell -- playwright test`) runs a live end-to-end challenge: it creates a real GeoGuessr party and plays a real game via the deployed PlayGame Lambda — don't run it casually. Commits must follow Conventional Commits — commitlint runs via a husky `commit-msg` hook.
 
 Secrets are managed with SST: `pnpx sst secret set <Name> <value>`. The secrets are `GeoguessrCookies`, `GoogleMeetsLink`, `SlackBotToken`, `SlackChannel`, `SlackSigningSecret`.
 
@@ -17,11 +17,11 @@ Secrets are managed with SST: `pnpx sst secret set <Name> <value>`. The secrets 
 
 A Slack bot that automates GeoGuessr party games. SST v4 (`sst.config.ts`) defines all infrastructure on AWS (ap-southeast-2): three Lambdas and a cron. Handlers live in `src/functions/`; secrets and function references are accessed in code via `Resource.*` from `sst`.
 
-**SlackHandler** (`slack-handler.ts`) — Slack Bolt app behind a Lambda function URL. Handles the `/start-party` and `/play-session` slash commands and the `start_session` button, each of which async-invokes (`InvocationType: "Event"`) one of the other two Lambdas via the AWS SDK. It must ack within Slack's 3s window, hence the fire-and-forget invokes.
+**SlackHandler** (`slack-handler.ts`) — Slack Bolt app behind a Lambda function URL. Handles the `/create-party` and `/play-game` slash commands and the `start_game` button, each of which async-invokes (`InvocationType: "Event"`) one of the other two Lambdas via the AWS SDK. It must ack within Slack's 3s window, hence the fire-and-forget invokes.
 
-**CreateParty** (`create-party.ts`) — triggered by the weekday cron (10:15 Sydney) or `/start-party`. Disbands any existing party via the client, creates a fresh one, and posts the party join link to Slack with a "start" button.
+**CreateParty** (`create-party.ts`) — triggered by the weekday cron (10:15 Sydney) or `/create-party`. Disbands any existing party via the client, creates a fresh one, and posts the party join link to Slack with a "start" button.
 
-**PlaySession** (`play-session.ts`) — the long-running game driver (15-minute timeout). Pure orchestration: reads the current party off the client, estimates total game duration from `gameSettings` and refuses to start games that won't fit in the remaining Lambda time, creates the game lobby, and drives the game from the lobby's typed events — announce round starts/finishes to Slack, advance rounds after an 8s transition pause, accumulate leaderboard entries, and post final standings.
+**PlayGame** (`play-game.ts`) — the long-running game driver (15-minute timeout). Pure orchestration: reads the current party off the client, estimates total game duration from `gameSettings` and refuses to start games that won't fit in the remaining Lambda time, creates the game lobby, and drives the game from the lobby's typed events — announce round starts/finishes to Slack, advance rounds after an 8s transition pause, accumulate leaderboard entries, and post final standings.
 
 **GeoGuessr client layer** (`src/geoguessr/`) — every byte to/from GeoGuessr goes through here; handlers never call the API directly. No browser anywhere: the whole game runs over GeoGuessr's own protocol (captured 2026-08-01).
 

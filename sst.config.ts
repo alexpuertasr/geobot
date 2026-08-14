@@ -21,18 +21,18 @@ export default $config({
     const slackChannel = new sst.Secret("SlackChannel");
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
-    const playSession = new sst.aws.Function("PlaySession", {
-      runtime: "nodejs24.x",
-      timeout: "15 minutes",
-      handler: "src/functions/play-session.handler",
-      retries: 0,
-      link: [geoguessrCookies, slackBotToken],
-    });
-
     const createParty = new sst.aws.Function("CreateParty", {
       runtime: "nodejs24.x",
       handler: "src/functions/create-party.handler",
       link: [geoguessrCookies, googleMeetsLink, slackBotToken, slackChannel],
+    });
+
+    const playGame = new sst.aws.Function("PlayGame", {
+      runtime: "nodejs24.x",
+      timeout: "15 minutes",
+      handler: "src/functions/play-game.handler",
+      retries: 0,
+      link: [geoguessrCookies, slackBotToken],
     });
 
     const slackRouter = new sst.aws.Router("SlackRouter", {
@@ -52,7 +52,7 @@ export default $config({
           external: ["@aws-sdk/client-lambda"],
         },
       },
-      link: [slackBotToken, slackSigningSecret, playSession, createParty],
+      link: [slackBotToken, slackSigningSecret, createParty, playGame],
     });
 
     new sst.aws.CronV2("CreatePartyCron", {
@@ -106,7 +106,7 @@ export default $config({
           {
             Effect: "Allow",
             Action: "lambda:InvokeFunction",
-            Resource: [createParty.arn, playSession.arn],
+            Resource: [createParty.arn, playGame.arn],
           },
         ],
       }),

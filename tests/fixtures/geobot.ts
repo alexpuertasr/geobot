@@ -6,15 +6,11 @@ import type {
   CreatePartyEvent,
   CreatePartyResult,
 } from "../../src/functions/create-party";
-
-export type PlaySessionEvent = {
-  channel?: string;
-  threadTs?: string;
-};
+import type { PlayGameEvent } from "../../src/functions/play-game";
 
 export type Geobot = {
-  createParty: (options?: CreatePartyEvent) => Promise<CreatePartyResult>;
-  startGame: (event?: PlaySessionEvent) => Promise<void>;
+  createParty: (event?: CreatePartyEvent) => Promise<CreatePartyResult>;
+  startGame: (event?: PlayGameEvent) => Promise<void>;
 };
 
 export const test = base.extend<{ geobot: Geobot }>({
@@ -39,7 +35,7 @@ export const test = base.extend<{ geobot: Geobot }>({
         await lambda.send(
           new InvokeCommand({
             InvocationType: "Event",
-            FunctionName: Resource.PlaySession.name,
+            FunctionName: Resource.PlayGame.name,
             Payload: Buffer.from(
               JSON.stringify({ ...event, trigger: "tests" }),
             ),

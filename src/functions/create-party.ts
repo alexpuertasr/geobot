@@ -69,7 +69,7 @@ export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
                 text: "Start once everyone is ready!",
               },
               style: "primary",
-              action_id: "start_session",
+              action_id: "start_game",
             },
           ],
         },

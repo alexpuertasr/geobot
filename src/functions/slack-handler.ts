@@ -13,7 +13,7 @@ const app = new App({
 
 const lambda = new LambdaClient({});
 
-app.command("/start-party", async ({ ack }) => {
+app.command("/create-party", async ({ ack }) => {
   await ack("🌍 Creating a party…");
 
   await lambda.send(
@@ -25,13 +25,13 @@ app.command("/start-party", async ({ ack }) => {
   );
 });
 
-app.command("/play-session", async ({ ack, command }) => {
-  await ack("🌍 Starting a session…");
+app.command("/play-game", async ({ ack, command }) => {
+  await ack("🌍 Starting a game…");
 
   await lambda.send(
     new InvokeCommand({
       InvocationType: "Event",
-      FunctionName: Resource.PlaySession.name,
+      FunctionName: Resource.PlayGame.name,
       Payload: Buffer.from(
         JSON.stringify({ trigger: "slack", channel: command.user_id }),
       ),
@@ -39,7 +39,7 @@ app.command("/play-session", async ({ ack, command }) => {
   );
 });
 
-app.action("start_session", async ({ client, body, ack }) => {
+app.action("start_game", async ({ client, body, ack }) => {
   await ack();
 
   const message = body.type === "block_actions" ? body.message : undefined;
@@ -54,7 +54,7 @@ app.action("start_session", async ({ client, body, ack }) => {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `▶️ Session started by <@${body.user.id}>`,
+        text: `▶️ Game started by <@${body.user.id}>`,
       },
     });
 
@@ -62,7 +62,7 @@ app.action("start_session", async ({ client, body, ack }) => {
     channel,
     ts: message.ts,
     blocks: updatedBlocks,
-    text: "Session started",
+    text: "Game started",
   });
 
   await client.chat.postMessage({
@@ -74,7 +74,7 @@ app.action("start_session", async ({ client, body, ack }) => {
   await lambda.send(
     new InvokeCommand({
       InvocationType: "Event",
-      FunctionName: Resource.PlaySession.name,
+      FunctionName: Resource.PlayGame.name,
       Payload: Buffer.from(
         JSON.stringify({ trigger: "slack", channel, threadTs: message.ts }),
       ),

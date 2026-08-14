@@ -1,5 +1,5 @@
 import { WebClient } from "@slack/web-api";
-import type { Context } from "aws-lambda";
+import type { Handler } from "aws-lambda";
 import { Resource } from "sst";
 
 import {
@@ -23,16 +23,13 @@ type Leaderboards = NonNullable<LiveChallenge["leaderboards"]>;
 type Game = NonNullable<Leaderboards["game"]>;
 type Entry = NonNullable<Game>["entries"][number];
 
-type PlaySessionEvent = {
+export type PlayGameEvent = {
   trigger?: "slack" | "tests";
   channel?: string;
   threadTs?: string;
 };
 
-export const handler = async (
-  event: PlaySessionEvent = {},
-  context: Context,
-) => {
+export const handler: Handler<PlayGameEvent> = async (event, context) => {
   const { channel, threadTs } = event;
 
   logger.addContext(context);
@@ -163,8 +160,8 @@ export const handler = async (
       body: JSON.stringify({ message: "Success" }),
     };
   } catch (error) {
-    logger.error("💥 Failed to play session", { error });
-    await notify("⚠️ Something went wrong while running the session.");
+    logger.error("💥 Failed to play game", { error });
+    await notify("⚠️ Something went wrong while running the game.");
 
     return {
       statusCode: 500,
