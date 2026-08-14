@@ -35,12 +35,14 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
 
   const geoguessr = (path: string, init?: RequestInit) =>
     fetch(`https://www.geoguessr.com${path}`, {
+      signal: AbortSignal.timeout(10000),
       ...init,
       headers: headers(init),
     });
 
   const gameServer = (path: string, init?: RequestInit) =>
     fetch(`https://game-server.geoguessr.com${path}`, {
+      signal: AbortSignal.timeout(10000),
       ...init,
       headers: headers(init),
     });
