@@ -10,6 +10,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  expect: {
+    timeout: 30_000,
+  },
   use: {
     trace: "retain-on-failure",
     testIdAttribute: "data-qa",

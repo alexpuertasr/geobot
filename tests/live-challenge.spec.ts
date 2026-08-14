@@ -1,13 +1,13 @@
 import { expect, test } from "./fixtures";
 
 test("runs a live challenge", async ({ guest, geobot }) => {
-  test.setTimeout(600_000);
+  test.setTimeout(300_000);
 
   const party = await geobot.createParty({
     options: {
       gameSettings: {
         roundCount: 3,
-        roundTime: 15,
+        roundTime: 10,
       },
     },
   });
@@ -21,27 +21,21 @@ test("runs a live challenge", async ({ guest, geobot }) => {
 
   await expect(
     player.page.getByText("Waiting for host to start the game"),
-  ).toBeVisible({ timeout: 30_000 });
+  ).toBeVisible();
 
   await geobot.startGame();
 
   for (let round = 1; round <= party.gameSettings.roundCount; round++) {
-    await expect(player.page.getByTestId("guess-map")).toBeVisible({
-      timeout: 60_000,
-    });
+    await expect(player.page.getByTestId("guess-map")).toBeVisible();
 
     await expect(async () => {
       await player.makeGuess();
-    }).toPass({ timeout: 90_000 });
+    }).toPass({ timeout: 30_000 });
 
-    await expect(player.page.getByTestId("guess-map")).toBeHidden({
-      timeout: 60_000,
-    });
+    await expect(player.page.getByTestId("guess-map")).toBeHidden();
   }
 
-  await expect(player.page.getByText("Total standings")).toBeVisible({
-    timeout: 60_000,
-  });
+  await expect(player.page.getByText("Total standings")).toBeVisible();
 
   await expect(player.page.getByText(player.name).first()).toBeVisible();
 });
