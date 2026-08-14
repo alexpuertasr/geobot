@@ -110,13 +110,17 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
       gameLobby.on("LiveChallengeRoundStarted", announceRoundStart);
 
       gameLobby.on("LiveChallengeRoundEnded", async (event) => {
-        const state = event.liveChallenge?.state;
-        if (state && state.currentRoundNumber >= state.roundCount) return;
+        try {
+          const state = event.liveChallenge?.state;
+          if (state && state.currentRoundNumber >= state.roundCount) return;
 
-        await sleep(ROUND_TRANSITION_MS);
+          await sleep(ROUND_TRANSITION_MS);
 
-        const toRoundNumber = (state?.currentRoundNumber ?? 0) + 1;
-        await geoClient.advanceRound(toRoundNumber);
+          const toRoundNumber = (state?.currentRoundNumber ?? 0) + 1;
+          await geoClient.advanceRound(toRoundNumber);
+        } catch (error) {
+          reject(error);
+        }
       });
 
       gameLobby.on("LiveChallengeLeaderboardUpdate", (event) => {
@@ -132,18 +136,22 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
         }
 
         setTimeout(async () => {
-          if (latestEntries.length) {
-            const standings = [...latestEntries]
-              .sort((a, b) => a.position - b.position)
-              .map((entry) => {
-                return `${entry.position}. ${entry.name} — ${entry.score}`;
-              })
-              .join("\n");
+          try {
+            if (latestEntries.length) {
+              const standings = [...latestEntries]
+                .sort((a, b) => a.position - b.position)
+                .map((entry) => {
+                  return `${entry.position}. ${entry.name} — ${entry.score}`;
+                })
+                .join("\n");
 
-            await announce(`🏁 Final scores:\n${standings}`);
+              await announce(`🏁 Final scores:\n${standings}`);
+            }
+
+            resolve();
+          } catch (error) {
+            reject(error);
           }
-
-          resolve();
         }, FINAL_SCORE_WAIT_MS);
       });
     });
