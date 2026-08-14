@@ -42,7 +42,12 @@ export const partyLobby = ({
   });
 
   const ready = new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Party lobby connection timed out"));
+    }, 10000);
+
     socket.once("open", () => {
+      clearTimeout(timeout);
       logger.info("📡 Party lobby open", { partyId });
       socket.send(
         JSON.stringify({
@@ -56,7 +61,10 @@ export const partyLobby = ({
       }, 15000);
       resolve();
     });
-    socket.once("error", reject);
+    socket.once("error", (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
   });
 
   socket.on("close", (code) => {
