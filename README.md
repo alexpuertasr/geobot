@@ -113,14 +113,6 @@ This will:
 - Set up the cron schedule
 - Enable live development with instant updates
 
-#### Seting up puppeteer for dev
-
-```bash
-pnpx @puppeteer/browsers install chromium@latest --path /tmp/localChromium
-```
-
-After update your .env YOUR_LOCAL_CHROMIUM_PATH to point to your installed tmp local chromium
-
 ### Deployment
 
 Deploy to production:
@@ -131,6 +123,7 @@ pnpx sst deploy --stage production
 
 ## Project Structure
 
-- `src/create-party.ts` - Main Lambda handler for the bot functionality
+- `src/functions/` - Lambda handlers (Slack commands, party creation, game driver)
+- `src/geoguessr/` - GeoGuessr client layer (HTTP + WebSocket protocol)
 - `sst.config.ts` - SST infrastructure configuration with cron scheduling
 - `sst-env.d.ts` - Auto-generated TypeScript definitions for SST resources
