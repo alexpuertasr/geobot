@@ -33,19 +33,35 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
     ...init?.headers,
   });
 
-  const geoguessr = (path: string, init?: RequestInit) =>
-    fetch(`https://www.geoguessr.com${path}`, {
+  const request = async (base: string, path: string, init?: RequestInit) => {
+    const response = await fetch(`${base}${path}`, {
       signal: AbortSignal.timeout(10000),
       ...init,
       headers: headers(init),
     });
 
-  const gameServer = (path: string, init?: RequestInit) =>
-    fetch(`https://game-server.geoguessr.com${path}`, {
-      signal: AbortSignal.timeout(10000),
-      ...init,
-      headers: headers(init),
+    const text = await response.clone().text();
+    let body: unknown;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+
+    logger.info(`🌐 ${init?.method ?? "GET"} ${path}`, {
+      status: response.status,
+      url: response.url,
+      body,
     });
+
+    return response;
+  };
+
+  const geoguessr = (path: string, init?: RequestInit) =>
+    request("https://www.geoguessr.com", path, init);
+
+  const gameServer = (path: string, init?: RequestInit) =>
+    request("https://game-server.geoguessr.com", path, init);
 
   const connectPartyLobby = async (partyId: string) => {
     currentPartyLobby?.close();
