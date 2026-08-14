@@ -4,12 +4,11 @@ import { Resource } from "sst";
 import type z from "zod";
 
 import { createGeoClient } from "../geoguessr/client";
-import { logger } from "../logger";
-
 import type {
   createPartyRequest,
   createPartyResponse,
-} from "./schemas/create-party";
+} from "../geoguessr/schemas/create-party";
+import { logger } from "../logger";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 

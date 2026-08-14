@@ -4,11 +4,12 @@ import { EventEmitter } from "node:events";
 import WebSocket from "ws";
 import * as z from "zod";
 
+import { logger } from "../logger";
+
 import {
   type GameLobbyEvent,
   gameLobbyEvent,
-} from "../functions/schemas/game-lobby-event";
-import { logger } from "../logger";
+} from "./schemas/game-lobby-event";
 
 export type GameLobby = {
   on(

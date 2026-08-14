@@ -1,23 +1,22 @@
 import * as z from "zod";
 
-import {
-  createLobbyRequest,
-  createLobbyResponse,
-} from "../functions/schemas/create-lobby";
-import {
-  createPartyRequest,
-  createPartyResponse,
-} from "../functions/schemas/create-party";
-import { initialProps } from "../functions/schemas/initial-props";
-import type { Party } from "../functions/schemas/party";
 import { logger } from "../logger";
 
 import { type GameLobby, gameLobby } from "./game-lobby";
 import { type PartyLobby, partyLobby } from "./party-lobby";
-
-export type { GameLobbyEvent } from "../functions/schemas/game-lobby-event";
+import {
+  createLobbyRequest,
+  createLobbyResponse,
+} from "./schemas/create-lobby";
+import {
+  createPartyRequest,
+  createPartyResponse,
+} from "./schemas/create-party";
+import { initialProps } from "./schemas/initial-props";
+import type { Party } from "./schemas/party";
 
 export type { GameLobby } from "./game-lobby";
+export type { GameLobbyEvent } from "./schemas/game-lobby-event";
 
 export type CreatePartyOptions = z.input<typeof createPartyRequest>;
 
