@@ -54,6 +54,7 @@ export const gameLobby = ({
   });
 
   socket.on("close", (code) => {
+    if (heartbeat) clearInterval(heartbeat);
     logger.warn("📡 Game lobby closed", { gameId, code });
   });
 
