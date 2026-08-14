@@ -87,11 +87,18 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
 
     gameLobby = await geoClient.createGameLobby();
 
+    if (!gameLobby) {
+      await notify(
+        "⚠️ I could not create the game lobby — is at least one other player in the party?",
+      );
+      return;
+    }
+
     await new Promise<void>((resolve, reject) => {
       let latestEntries: Entry[] = [];
 
       if (!gameLobby) {
-        reject();
+        reject(new Error("Game lobby is not available"));
         return;
       }
 
