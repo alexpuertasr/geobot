@@ -29,7 +29,7 @@ export type PlayGameEvent = {
   threadTs?: string;
 };
 
-export const handler: Handler<PlayGameEvent> = async (event, context) => {
+export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
   const { channel, threadTs } = event;
 
   logger.addContext(context);
@@ -56,11 +56,7 @@ export const handler: Handler<PlayGameEvent> = async (event, context) => {
 
     if (!party) {
       await notify("⚠️ I could not find the party to start the game.");
-
-      return {
-        statusCode: 500,
-        body: JSON.stringify({ error: "No party found" }),
-      };
+      return;
     }
 
     const { roundCount, roundTime } = party.gameSettings;
@@ -86,10 +82,7 @@ export const handler: Handler<PlayGameEvent> = async (event, context) => {
           : `⏱️ Not starting the game: ${roundCount} rounds of ${roundTime}s need ~${Math.ceil(estimatedMs / 60000)} min, but I only have ${Math.floor(remainingMs / 60000)} min left.`,
       );
 
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ message: "Skipped: game too long" }),
-      };
+      return;
     }
 
     gameLobby = await geoClient.createGameLobby();
@@ -154,19 +147,9 @@ export const handler: Handler<PlayGameEvent> = async (event, context) => {
         }, FINAL_SCORE_WAIT_MS);
       });
     });
-
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Success" }),
-    };
   } catch (error) {
     logger.error("💥 Failed to play game", { error });
     await notify("⚠️ Something went wrong while running the game.");
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Failed to execute" }),
-    };
   } finally {
     gameLobby?.close();
   }
