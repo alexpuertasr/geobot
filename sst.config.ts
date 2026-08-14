@@ -22,20 +22,10 @@ export default $config({
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
     const playSession = new sst.aws.Function("PlaySession", {
-      memory: "2 GB",
       runtime: "nodejs24.x",
       timeout: "15 minutes",
       handler: "src/functions/play-session.handler",
       retries: 0,
-      environment: {
-        YOUR_LOCAL_CHROMIUM_PATH: process.env.YOUR_LOCAL_CHROMIUM_PATH ?? "",
-      },
-      nodejs: {
-        install: ["@sparticuz/chromium"],
-        esbuild: {
-          external: ["yargs"],
-        },
-      },
       link: [geoguessrCookies, slackBotToken],
     });
 

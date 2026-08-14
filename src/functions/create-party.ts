@@ -3,9 +3,13 @@ import type { Handler } from "aws-lambda";
 import { Resource } from "sst";
 import type z from "zod";
 
+import { createGeoClient } from "../geoguessr/client";
 import { logger } from "../logger";
 
-import { createPartyRequest, createPartyResponse } from "./schemas/parties";
+import type {
+  createPartyRequest,
+  createPartyResponse,
+} from "./schemas/create-party";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
@@ -14,7 +18,7 @@ export type CreatePartyEvent = {
   options?: z.input<typeof createPartyRequest>;
 };
 
-export type CreatePartyResult = z.output<typeof createPartyResponse>;
+export type CreatePartyResult = z.output<typeof createPartyResponse> | null;
 
 export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
   event,
@@ -24,23 +28,23 @@ export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
 
   logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
 
-  await fetch("https://www.geoguessr.com/api/v4/parties/v2/disband", {
-    method: "DELETE",
-    headers: {
-      cookie: Resource.GeoguessrCookies.value,
-    },
+  const geoClient = await createGeoClient({
+    cookies: Resource.GeoguessrCookies.value,
   });
 
-  const response = await fetch("https://www.geoguessr.com/api/v4/parties/v2", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      cookie: Resource.GeoguessrCookies.value,
-    },
-    body: JSON.stringify(createPartyRequest.parse(event.options)),
-  });
+  const currentParty = geoClient.currentParty();
 
-  const party = createPartyResponse.parse(await response.json());
+  if (currentParty) {
+    await geoClient.disbandParty();
+  }
+
+  const party = await geoClient.createParty(event.options);
+
+  if (!party) {
+    logger.error("❌ Failed to create party", { party });
+    return null;
+  }
+
   const partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`;
 
   if (event.trigger === "slack") {

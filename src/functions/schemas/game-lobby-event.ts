@@ -1,8 +1,8 @@
 import * as z from "zod";
 
-export type SessionEvent = z.infer<typeof sessionEvent>;
+export type GameLobbyEvent = z.infer<typeof gameLobbyEvent>;
 
-export const sessionEvent = z.object({
+export const gameLobbyEvent = z.object({
   code: z.enum([
     "ConnectionOpened",
     "LiveChallengeStarted",

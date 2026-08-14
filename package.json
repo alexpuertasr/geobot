@@ -20,9 +20,8 @@
     "@aws-lambda-powertools/logger": "2.34.0",
     "@slack/bolt": "5.0.0",
     "@slack/web-api": "8.0.0",
-    "@sparticuz/chromium": "149.0.0",
-    "puppeteer-core": "25.3.0",
     "sst": "4.17.1",
+    "ws": "8.21.3",
     "zod": "4.4.3"
   },
   "devDependencies": {
@@ -33,6 +32,7 @@
     "@playwright/test": "1.62.0",
     "@types/aws-lambda": "8.10.162",
     "@types/node": "26.1.1",
+    "@types/ws": "8.18.1",
     "husky": "9.1.7",
     "typescript": "7.0.2"
   }

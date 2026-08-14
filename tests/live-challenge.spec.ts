@@ -12,6 +12,11 @@ test("runs a live challenge", async ({ guest, geobot }) => {
     },
   });
 
+  if (!party) {
+    expect(party).not.toBeNull();
+    return;
+  }
+
   const player = await guest.create("Player 1", party);
 
   await expect(
