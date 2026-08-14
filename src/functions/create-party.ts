@@ -46,7 +46,7 @@ export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
 
   const partyLink = `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`;
 
-  if (event.trigger === "slack") {
+  if (event.trigger !== "tests") {
     const result = await slack.chat.postMessage({
       channel: Resource.SlackChannel.value,
       text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
