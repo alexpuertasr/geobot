@@ -136,6 +136,15 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         body: JSON.stringify(createPartyRequest.parse(options)),
       });
 
+      if (!response.ok) {
+        logger.error("🎉 Could not create party", {
+          status: response.status,
+          body: await response.text(),
+        });
+
+        return null;
+      }
+
       const body = await response.json();
       let party: Party | null = null;
 
