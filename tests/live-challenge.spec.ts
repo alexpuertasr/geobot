@@ -27,7 +27,7 @@ test("runs a live challenge", async ({ guest, geobot }) => {
 
   for (let round = 1; round <= party.gameSettings.roundCount; round++) {
     await expect(player.page.getByTestId("guess-map")).toBeVisible({
-      timeout: round === 1 ? 120_000 : 60_000,
+      timeout: 60_000,
     });
 
     await expect(async () => {
