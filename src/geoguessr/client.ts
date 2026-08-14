@@ -119,8 +119,19 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
     refreshParty: () => refreshParty(),
 
     disbandParty: async () => {
-      await geoguessr("/api/v4/parties/v2/disband", { method: "DELETE" });
+      const response = await geoguessr("/api/v4/parties/v2/disband", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        logger.warn("🎉 Could not disband party", {
+          status: response.status,
+          body: await response.text(),
+        });
+      }
+
       currentParty = null;
+      currentGameId = null;
 
       if (currentPartyLobby) {
         currentPartyLobby.close();
