@@ -46,7 +46,7 @@ export const gameLobby = ({
   });
 
   socket.on("open", () => {
-    logger.info("📡 WebSocket open", { gameId });
+    logger.info("📡 Game lobby open", { gameId });
     socket.send(JSON.stringify({ code: "SubscribeToLobby", gameId, playerId }));
     heartbeat = setInterval(() => {
       socket.send(JSON.stringify({ code: "HeartBeat" }));
@@ -54,11 +54,11 @@ export const gameLobby = ({
   });
 
   socket.on("close", (code) => {
-    logger.warn("📡 WebSocket closed", { gameId, code });
+    logger.warn("📡 Game lobby closed", { gameId, code });
   });
 
   socket.on("error", (error) => {
-    logger.error("📡 WebSocket error", { gameId, error });
+    logger.error("📡 Game lobby error", { gameId, error });
     emitter.emit("error", error);
   });
 
@@ -67,7 +67,7 @@ export const gameLobby = ({
     try {
       data = JSON.parse(String(raw));
     } catch (error) {
-      logger.error("📡 WebSocket frame unparsed", {
+      logger.error("📡 Game lobby frame unparsed", {
         stage: "json",
         reason: error instanceof Error ? error.message : String(error),
         payload: String(raw),
@@ -78,15 +78,17 @@ export const gameLobby = ({
 
     try {
       const event = gameLobbyEvent.parse(data);
-      logger.info(`🛰️ ${event.code} emitted`, { data });
+      logger.info(`🛰️ [Game] ${event.code} emitted`, { data });
 
       try {
         emitter.emit(event.code, event);
       } catch (error) {
-        logger.error(`💥 Listener failed handling ${event.code}`, { error });
+        logger.error(`💥 [Game] Listener failed handling ${event.code}`, {
+          error,
+        });
       }
     } catch (error) {
-      logger.error(`🛰️ Failed to parse session event`, {
+      logger.error(`🛰️ [Game] Failed to parse event`, {
         data,
         reason:
           error instanceof z.ZodError ? z.prettifyError(error) : String(error),
