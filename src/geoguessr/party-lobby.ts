@@ -28,25 +28,19 @@ export const partyLobby = ({
     headers: { cookie: cookies, origin: "https://www.geoguessr.com" },
   });
 
-  const ready = new Promise<void>((resolve, reject) => {
-    socket.once("open", () => {
-      logger.info("📡 Party lobby open", { partyId });
-      socket.send(
-        JSON.stringify({
-          code: "Subscribe",
-          topic: `partyv2:${partyId}`,
-          client: "web",
-        }),
-      );
-      heartbeat = setInterval(() => {
-        socket.send(JSON.stringify({ code: "HeartBeat" }));
-      }, 15000);
-      resolve();
-    });
-    socket.once("error", reject);
+  socket.once("open", () => {
+    logger.info("📡 Party lobby open", { partyId });
+    socket.send(
+      JSON.stringify({
+        code: "Subscribe",
+        topic: `partyv2:${partyId}`,
+        client: "web",
+      }),
+    );
+    heartbeat = setInterval(() => {
+      socket.send(JSON.stringify({ code: "HeartBeat" }));
+    }, 15000);
   });
-
-  ready.catch(() => {});
 
   socket.on("close", (code) => {
     logger.warn("📡 Party lobby closed", { partyId, code });
