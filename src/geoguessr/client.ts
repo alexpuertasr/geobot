@@ -13,6 +13,7 @@ import type { Party } from "../functions/schemas/party";
 import { logger } from "../logger";
 
 import { type GameLobby, gameLobby } from "./game-lobby";
+import { type PartyLobby, partyLobby } from "./party-lobby";
 
 export type { GameLobbyEvent } from "../functions/schemas/game-lobby-event";
 
@@ -23,6 +24,7 @@ export type CreatePartyOptions = z.input<typeof createPartyRequest>;
 export const createGeoClient = async ({ cookies }: { cookies: string }) => {
   let xClient: string | null = null;
   let currentParty: Party | null = null;
+  let currentPartyLobby: PartyLobby | null = null;
   let currentGameId: string | null = null;
 
   const headers = (init?: RequestInit) => ({
@@ -70,6 +72,14 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         logger.info("📄 Party page", { pageProps: page.props.pageProps });
         xClient = page.buildId ? `web-${page.buildId}` : null;
         currentParty = page.props.pageProps.initialParty ?? null;
+        if (currentParty) {
+          currentPartyLobby?.close();
+          currentPartyLobby = partyLobby({
+            cookies,
+            xClient,
+            partyId: currentParty.partyId,
+          });
+        }
       } catch (error) {
         logger.error("📄 Failed to parse party page props", {
           data,
@@ -100,6 +110,11 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
     disbandParty: async () => {
       await geoguessr("/api/v4/parties/v2/disband", { method: "DELETE" });
       currentParty = null;
+
+      if (currentPartyLobby) {
+        currentPartyLobby.close();
+        currentPartyLobby = null;
+      }
     },
 
     createParty: async (
@@ -115,6 +130,13 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
 
       try {
         party = createPartyResponse.parse(body);
+        currentParty = party;
+        currentPartyLobby?.close();
+        currentPartyLobby = partyLobby({
+          cookies,
+          xClient,
+          partyId: currentParty.partyId,
+        });
       } catch (error) {
         logger.error("🎉 Unexpected create-party response", {
           status: response.status,
@@ -135,6 +157,11 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         return null;
       }
 
+      if (!currentPartyLobby) {
+        logger.error("🎲 Cannot create a game lobby without a party lobby");
+        return null;
+      }
+
       const { partyId, owner } = currentParty;
 
       const response = await gameServer(`/api/parties/v2/${partyId}/lobby`, {
@@ -142,7 +169,6 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         body: JSON.stringify(createLobbyRequest.parse({})),
       });
 
-      // e.g. a plain-text 400 "Not enough players" until ≥2 players are present
       if (!response.ok) {
         logger.warn("🎲 Could not create game lobby", {
           status: response.status,
