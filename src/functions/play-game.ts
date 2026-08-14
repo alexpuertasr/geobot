@@ -13,9 +13,8 @@ const slack = new WebClient(Resource.SlackBotToken.value);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const ROUND_TRANSITION_MS = 8000;
-const FINAL_SCORE_WAIT_MS = 30000;
-const SAFETY_BUFFER_MS = 60000;
+const FINAL_SCORE_WAIT_MS = 30_000;
+const SAFETY_BUFFER_MS = 60_000;
 
 type LiveChallenge = NonNullable<GameLobbyEvent["liveChallenge"]>;
 type Leaderboards = NonNullable<LiveChallenge["leaderboards"]>;
@@ -31,6 +30,8 @@ export type PlayGameEvent = {
 
 export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
   const { channel, threadTs } = event;
+
+  const roundTransitionMs = event.trigger === "tests" ? 2_000 : 8_000;
 
   logger.addContext(context);
   logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
@@ -63,8 +64,8 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
     const remainingMs = context.getRemainingTimeInMillis();
 
     const estimatedMs =
-      roundCount * roundTime * 1000 +
-      (roundCount - 1) * ROUND_TRANSITION_MS +
+      roundCount * roundTime * 1_000 +
+      (roundCount - 1) * roundTransitionMs +
       FINAL_SCORE_WAIT_MS +
       SAFETY_BUFFER_MS;
 
@@ -121,7 +122,7 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
           const state = event.liveChallenge?.state;
           if (state && state.currentRoundNumber >= state.roundCount) return;
 
-          await sleep(ROUND_TRANSITION_MS);
+          await sleep(roundTransitionMs);
 
           const toRoundNumber = (state?.currentRoundNumber ?? 0) + 1;
           await geoClient.advanceRound(toRoundNumber);
