@@ -14,7 +14,7 @@ export const party = z.object({
   bannedPlayerIds: z.array(z.string()).nullable(),
   mutedPlayerIds: z.array(z.string()),
   expiresAt: z.union([z.number(), z.string()]),
-  timestamp: z.string(),
+  timestamp: z.string().nullish(),
   partySettings: z.object({
     allowedCommunication: z.string(),
     isolateInGameChat: z.boolean(),
