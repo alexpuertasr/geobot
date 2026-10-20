@@ -49,3 +49,6 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      - run: pnpm exec sst shell -- node scripts/notify-e2e-failure.ts
+        if: failure()

@@ -8,6 +8,7 @@
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -19,6 +20,7 @@
   "include": [
     "src/**/*",
     "tests/**/*",
+    "scripts/**/*",
     "sst-env.d.ts",
     "sst.config.ts",
     "playwright.config.ts"
