@@ -2,7 +2,7 @@ name: E2E
 
 on:
   schedule:
-    - cron: "0 20 * * 0-4"
+    - cron: "0 17 * * 0-4"
   workflow_dispatch:
   workflow_call:
 
