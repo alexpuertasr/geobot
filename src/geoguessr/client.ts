@@ -13,6 +13,7 @@ import {
   createPartyResponse,
 } from "./schemas/create-party";
 import { initialProps } from "./schemas/initial-props";
+import type { Member } from "./schemas/member";
 import type { Party } from "./schemas/party";
 
 export type { GameLobby } from "./game-lobby";
@@ -23,6 +24,7 @@ export type CreatePartyOptions = z.input<typeof createPartyRequest>;
 export const createGeoClient = async ({ cookies }: { cookies: string }) => {
   let xClient: string | null = null;
   let currentParty: Party | null = null;
+  let currentMembers: Member[] = [];
   let currentPartyLobby: PartyLobby | null = null;
   let currentGameId: string | null = null;
 
@@ -80,6 +82,7 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
 
   const refreshParty = async (): Promise<Party | null> => {
     currentParty = null;
+    currentMembers = [];
 
     const response = await geoguessr("/party");
     const html = await response.text();
@@ -104,6 +107,7 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         logger.info("📄 Party page", { pageProps: page.props.pageProps });
         xClient = page.buildId ? `web-${page.buildId}` : null;
         currentParty = page.props.pageProps.initialParty ?? null;
+        currentMembers = page.props.pageProps.initialMemberInfo?.members ?? [];
         if (currentParty) {
           await connectPartyLobby(currentParty.partyId);
         }
@@ -132,6 +136,8 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
   return {
     currentParty: () => currentParty,
 
+    currentMembers: () => currentMembers,
+
     refreshParty: () => refreshParty(),
 
     disbandParty: async () => {
@@ -147,6 +153,7 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
       }
 
       currentParty = null;
+      currentMembers = [];
       currentGameId = null;
 
       if (currentPartyLobby) {
@@ -179,6 +186,7 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
         party = createPartyResponse.parse(body);
         await connectPartyLobby(party.partyId);
         currentParty = party;
+        currentMembers = [party.owner];
       } catch (error) {
         logger.error("🎉 Unexpected create-party response", {
           status: response.status,

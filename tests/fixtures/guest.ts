@@ -5,6 +5,8 @@ import {
   type Page,
 } from "@playwright/test";
 
+import { getPartyJoinLink } from "@/geoguessr/helpers/party";
+
 export type Guest = {
   name: string;
   page: Page;
@@ -29,9 +31,7 @@ export const test = base.extend<{ guest: GuestFixture }>({
 
         const guestPage = await guestContext.newPage();
 
-        await guestPage.goto(
-          `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`,
-        );
+        await guestPage.goto(getPartyJoinLink(party));
 
         await guestPage.getByTestId("guest-nick-input").fill(name);
         await guestPage.getByRole("button", { name: "Join party" }).click();

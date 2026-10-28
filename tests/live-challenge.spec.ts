@@ -1,9 +1,11 @@
+import { isPartyInUse } from "@/geoguessr/helpers/party";
+
 import { expect, test } from "./fixtures";
 
 test("runs a live challenge", async ({ guest, geobot }) => {
   test.setTimeout(300_000);
 
-  const party = await geobot.createParty({
+  const { party, members } = await geobot.createParty({
     options: {
       gameSettings: {
         roundCount: 3,
@@ -16,6 +18,11 @@ test("runs a live challenge", async ({ guest, geobot }) => {
     expect(party).not.toBeNull();
     return;
   }
+
+  test.skip(
+    isPartyInUse(party, members),
+    "The shared GeoGuessr party is in use (game ongoing or players present); running now would disband it.",
+  );
 
   const player = await guest.create("Player 1", party);
 
