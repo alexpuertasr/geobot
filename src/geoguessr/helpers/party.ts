@@ -16,5 +16,5 @@ export const isPartyInUse = (party: Party, members: Member[]) =>
  * The link players open to join the party. `j=3` is what GeoGuessr's own share
  * button appends; it lands guests on the join page with the nickname prompt.
  */
-export const getPartyJoinLink = (party: { joinCode: { code: string } }) =>
+export const getPartyJoinLink = (party: Party) =>
   `https://www.geoguessr.com/join/${party.joinCode.code}?j=3`;

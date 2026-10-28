@@ -6,6 +6,7 @@ import {
 } from "@playwright/test";
 
 import { getPartyJoinLink } from "@/geoguessr/helpers/party";
+import type { Party } from "@/geoguessr/schemas/party";
 
 export type Guest = {
   name: string;
@@ -14,10 +15,7 @@ export type Guest = {
 };
 
 export type GuestFixture = {
-  create: (
-    name: string,
-    party: { joinCode: { code: string } },
-  ) => Promise<Guest>;
+  create: (name: string, party: Party) => Promise<Guest>;
 };
 
 export const test = base.extend<{ guest: GuestFixture }>({
