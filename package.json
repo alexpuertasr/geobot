@@ -7,6 +7,9 @@
   "engines": {
     "node": "24.x"
   },
+  "imports": {
+    "#/*": "./src/*"
+  },
   "scripts": {
     "prepare": "husky",
     "postinstall": "sst install",

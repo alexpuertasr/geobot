@@ -1,7 +1,7 @@
 import { WebClient } from "@slack/web-api";
 import { Resource } from "sst";
 
-import { logger } from "../src/logger.ts";
+import { logger } from "#/logger.ts";
 
 const {
   GITHUB_EVENT_NAME,

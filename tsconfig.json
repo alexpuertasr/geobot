@@ -4,6 +4,9 @@
     "lib": ["es2024", "dom"],
     "module": "es2022",
     "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,

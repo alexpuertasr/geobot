@@ -6,8 +6,8 @@ import {
   createGeoClient,
   type GameLobby,
   type GameLobbyEvent,
-} from "../geoguessr/client";
-import { logger } from "../logger";
+} from "@/geoguessr/client";
+import { logger } from "@/logger";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 

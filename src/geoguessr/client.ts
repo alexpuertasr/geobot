@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { logger } from "../logger";
+import { logger } from "@/logger";
 
 import { type GameLobby, gameLobby } from "./game-lobby";
 import { type PartyLobby, partyLobby } from "./party-lobby";

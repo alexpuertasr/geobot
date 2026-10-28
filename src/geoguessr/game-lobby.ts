@@ -4,7 +4,7 @@ import { EventEmitter } from "node:events";
 import WebSocket from "ws";
 import * as z from "zod";
 
-import { logger } from "../logger";
+import { logger } from "@/logger";
 
 import {
   type GameLobbyEvent,

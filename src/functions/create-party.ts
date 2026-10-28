@@ -3,12 +3,12 @@ import type { Handler } from "aws-lambda";
 import { Resource } from "sst";
 import type z from "zod";
 
-import { createGeoClient } from "../geoguessr/client";
+import { createGeoClient } from "@/geoguessr/client";
 import type {
   createPartyRequest,
   createPartyResponse,
-} from "../geoguessr/schemas/create-party";
-import { logger } from "../logger";
+} from "@/geoguessr/schemas/create-party";
+import { logger } from "@/logger";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 

@@ -5,8 +5,8 @@ import { Resource } from "sst";
 import type {
   CreatePartyEvent,
   CreatePartyResult,
-} from "../../src/functions/create-party";
-import type { PlayGameEvent } from "../../src/functions/play-game";
+} from "@/functions/create-party";
+import type { PlayGameEvent } from "@/functions/play-game";
 
 export type Geobot = {
   createParty: (event?: CreatePartyEvent) => Promise<CreatePartyResult>;
