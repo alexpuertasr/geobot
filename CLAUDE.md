@@ -11,7 +11,7 @@ Package manager is pnpm (`packageManager` pinned in package.json).
 
 `pnpm test` (`sst shell -- playwright test`) runs a live end-to-end challenge: it creates a real GeoGuessr party and plays a real game via the deployed PlayGame Lambda — don't run it casually. Commits must follow Conventional Commits — commitlint runs via a husky `commit-msg` hook.
 
-Secrets are managed with SST: `pnpx sst secret set <Name> <value>`. The secrets are `GeoguessrCookies`, `GoogleMeetsLink`, `SlackBotToken`, `SlackChannel`, `SlackSigningSecret`.
+Secrets are managed with SST: `pnpx sst secret set <Name> <value>`. The secrets are `GeoguessrCookies`, `GeoguessrPlayer1Cookies`, `GoogleMeetsLink`, `SlackBotToken`, `SlackChannel`, `SlackSigningSecret`.
 
 ## Architecture
 

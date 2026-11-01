@@ -14,6 +14,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "GeoguessrPlayer1Cookies": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "GoogleMeetsLink": {
       "type": "sst.sst.Secret"
       "value": string

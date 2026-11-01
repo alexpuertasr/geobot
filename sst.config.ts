@@ -21,6 +21,8 @@ export default $config({
     const slackChannel = new sst.Secret("SlackChannel");
     const slackSigningSecret = new sst.Secret("SlackSigningSecret");
 
+    new sst.Secret("GeoguessrPlayer1Cookies");
+
     const createParty = new sst.aws.Function("CreateParty", {
       runtime: "nodejs24.x",
       handler: "src/functions/create-party.handler",
