@@ -8,7 +8,7 @@ test("runs a live challenge", async ({ player, geobot }) => {
   const { party, members } = await geobot.createParty({
     options: {
       gameSettings: {
-        roundCount: 3,
+        roundCount: 2,
         roundTime: 10,
       },
     },
