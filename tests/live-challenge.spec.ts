@@ -9,7 +9,7 @@ test("runs a live challenge", async ({ player, geobot }) => {
     options: {
       gameSettings: {
         roundCount: 2,
-        roundTime: 10,
+        roundTime: 12,
       },
     },
   });
