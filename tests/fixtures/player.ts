@@ -44,6 +44,13 @@ export const test = base.extend<{ player: PlayerFixture }>({
         await context.addCookies(JSON.parse(account.cookies));
         await context.addInitScript(() => {
           localStorage.setItem("partyV2LowPerformancePromptAnswered", "true");
+          localStorage.setItem("partyV2WhatsNewPointRushSeen", "true");
+          localStorage.setItem("__GEOGUESSR_SHOW_FEEDBACK__", "false");
+          localStorage.setItem("__GEOGUESSR_SOUND_ENABLED__", "false");
+          localStorage.setItem(
+            "__GEOGUESSR_MAP_RENDERING_TYPE__",
+            JSON.stringify("RASTER"),
+          );
         });
 
         const playerPage = await context.newPage();
