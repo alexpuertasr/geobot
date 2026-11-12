@@ -12,9 +12,12 @@ export const member = z.object({
   isGuest: z.boolean(),
   isPresent: z.boolean(),
   isPlaying: z.boolean(),
+  isInCurrentGame: z.boolean().nullish(),
   isBenched: z.boolean(),
+  benchReason: z.string().nullish(),
   isEligibleAsOwner: z.boolean(),
   victories: z.number(),
   clientType: z.string(),
+  sessionId: z.string().nullish(),
   club: z.unknown(),
 });

@@ -5,7 +5,8 @@ import { Resource } from "sst";
 import {
   createGeoClient,
   type GameLobby,
-  type GameLobbyEvent,
+  type GameLobbyEventOf,
+  type LiveChallengeLeaderboardEntry,
 } from "@/geoguessr/client";
 import { logger } from "@/logger";
 
@@ -15,12 +16,6 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const FINAL_SCORE_WAIT_MS = 30_000;
 const SAFETY_BUFFER_MS = 60_000;
-
-type LiveChallenge = NonNullable<GameLobbyEvent["liveChallenge"]>;
-type Leaderboards = NonNullable<LiveChallenge["leaderboards"]>;
-
-type Game = NonNullable<Leaderboards["game"]>;
-type Entry = NonNullable<Game>["entries"][number];
 
 export type PlayGameEvent = {
   trigger?: "slack" | "tests";
@@ -96,7 +91,7 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
     }
 
     await new Promise<void>((resolve, reject) => {
-      let latestEntries: Entry[] = [];
+      let latestEntries: LiveChallengeLeaderboardEntry[] = [];
 
       if (!gameLobby) {
         reject(new Error("Game lobby is not available"));
@@ -105,13 +100,14 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
 
       gameLobby.onError(reject);
 
-      const announceRoundStart = (event: GameLobbyEvent) => {
-        const state = event.liveChallenge?.state;
-        if (!state) return;
+      const announceRoundStart = (
+        event: GameLobbyEventOf<
+          "LiveChallengeStarted" | "LiveChallengeRoundStarted"
+        >,
+      ) => {
+        const { currentRoundNumber, roundCount } = event.liveChallenge.state;
 
-        void notify(
-          `🎮 Round ${state.currentRoundNumber} of ${state.roundCount} started!`,
-        );
+        void notify(`🎮 Round ${currentRoundNumber} of ${roundCount} started!`);
       };
 
       gameLobby.on("LiveChallengeStarted", announceRoundStart);
@@ -119,29 +115,26 @@ export const handler: Handler<PlayGameEvent, void> = async (event, context) => {
 
       gameLobby.on("LiveChallengeRoundEnded", async (event) => {
         try {
-          const state = event.liveChallenge?.state;
-          if (state && state.currentRoundNumber >= state.roundCount) return;
+          const { currentRoundNumber, roundCount } = event.liveChallenge.state;
+          if (currentRoundNumber >= roundCount) return;
 
           await sleep(roundTransitionMs);
 
-          const toRoundNumber = (state?.currentRoundNumber ?? 0) + 1;
-          await geoClient.advanceRound(toRoundNumber);
+          await geoClient.advanceRound(currentRoundNumber + 1);
         } catch (error) {
           reject(error);
         }
       });
 
       gameLobby.on("LiveChallengeLeaderboardUpdate", (event) => {
-        const entries = event.liveChallenge?.leaderboards?.game?.entries;
+        const entries = event.liveChallenge.leaderboards.game?.entries;
         if (entries?.length) latestEntries = entries;
       });
 
       gameLobby.on("LiveChallengeFinished", (event) => {
-        if (event.liveChallenge?.state) {
-          void notify(
-            `🏁 All ${event.liveChallenge.state.currentRoundNumber} rounds finished. GG!`,
-          );
-        }
+        void notify(
+          `🏁 All ${event.liveChallenge.state.currentRoundNumber} rounds finished. GG!`,
+        );
 
         setTimeout(async () => {
           try {

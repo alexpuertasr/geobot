@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { party } from "./party";
+import { party } from "./entities/party";
 
 export const createPartyRequest = z
   .object({

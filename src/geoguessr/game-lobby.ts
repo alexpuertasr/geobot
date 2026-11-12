@@ -8,13 +8,14 @@ import { logger } from "@/logger";
 
 import {
   type GameLobbyEvent,
+  type GameLobbyEventOf,
   gameLobbyEvent,
 } from "./schemas/game-lobby-event";
 
 export type GameLobby = {
-  on(
-    code: GameLobbyEvent["code"],
-    listener: (event: GameLobbyEvent) => void,
+  on<Code extends GameLobbyEvent["code"]>(
+    code: Code,
+    listener: (event: GameLobbyEventOf<Code>) => void,
   ): void;
   onError(listener: (error: Error) => void): void;
   close(): void;

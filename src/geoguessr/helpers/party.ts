@@ -1,5 +1,5 @@
-import type { Member } from "@/geoguessr/schemas/member";
-import type { Party } from "@/geoguessr/schemas/party";
+import type { Member } from "@/geoguessr/schemas/entities/member";
+import type { Party } from "@/geoguessr/schemas/entities/party";
 
 /**
  * Whether the party has a game running or anyone besides the host connected.

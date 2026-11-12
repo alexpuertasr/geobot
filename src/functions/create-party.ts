@@ -6,8 +6,8 @@ import type z from "zod";
 import { createGeoClient } from "@/geoguessr/client";
 import { getPartyJoinLink, isPartyInUse } from "@/geoguessr/helpers/party";
 import type { createPartyRequest } from "@/geoguessr/schemas/create-party";
-import type { Member } from "@/geoguessr/schemas/member";
-import type { Party } from "@/geoguessr/schemas/party";
+import type { Member } from "@/geoguessr/schemas/entities/member";
+import type { Party } from "@/geoguessr/schemas/entities/party";
 import { logger } from "@/logger";
 
 const slack = new WebClient(Resource.SlackBotToken.value);

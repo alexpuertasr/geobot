@@ -12,12 +12,17 @@ import {
   createPartyRequest,
   createPartyResponse,
 } from "./schemas/create-party";
+import type { Member } from "./schemas/entities/member";
+import type { Party } from "./schemas/entities/party";
 import { initialProps } from "./schemas/initial-props";
-import type { Member } from "./schemas/member";
-import type { Party } from "./schemas/party";
 
 export type { GameLobby } from "./game-lobby";
-export type { GameLobbyEvent } from "./schemas/game-lobby-event";
+export type { LiveChallengeLeaderboardEntry } from "./schemas/entities/live-challenge/leaderboards";
+export type { LiveChallengeState } from "./schemas/entities/live-challenge/state";
+export type {
+  GameLobbyEvent,
+  GameLobbyEventOf,
+} from "./schemas/game-lobby-event";
 
 export type CreatePartyOptions = z.input<typeof createPartyRequest>;
 

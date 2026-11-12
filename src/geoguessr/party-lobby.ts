@@ -8,14 +8,15 @@ import { logger } from "@/logger";
 
 import {
   type PartyLobbyEvent,
+  type PartyLobbyEventOf,
   partyLobbyEvent,
 } from "./schemas/party-lobby-event";
 
 export type PartyLobby = {
   ready: Promise<void>;
-  on(
-    code: PartyLobbyEvent["code"],
-    listener: (event: PartyLobbyEvent) => void,
+  on<Code extends PartyLobbyEvent["code"]>(
+    code: Code,
+    listener: (event: PartyLobbyEventOf<Code>) => void,
   ): void;
   close(): void;
 };

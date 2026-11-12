@@ -7,7 +7,7 @@ import {
 import { Resource } from "sst";
 
 import { getPartyJoinLink } from "@/geoguessr/helpers/party";
-import type { Party } from "@/geoguessr/schemas/party";
+import type { Party } from "@/geoguessr/schemas/entities/party";
 
 const accounts = {
   "player-1": {
