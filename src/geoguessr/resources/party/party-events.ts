@@ -4,7 +4,6 @@ import { parseOrLog } from "../../core/parse";
 import type { SdkLogger } from "../../options";
 import type { NotificationFrame } from "../../protocol/schemas/frames";
 import {
-  gameStartedSchema,
   type MemberData,
   memberListSchema,
   type PartyData,
@@ -15,7 +14,6 @@ export type PartyEvents = {
   /** Settings, state or attached game changed. */
   updated: { party: PartyData };
   membersUpdated: { members: MemberData[] };
-  gameStarted: { gameId: string; playerIds: string[] };
   disbanded: Record<string, never>;
 };
 
@@ -39,8 +37,6 @@ export const readPartyFrame = (
       return updated(read(partySchema));
     case "PartyMemberListUpdated":
       return membersUpdated(read(memberListSchema));
-    case "PartyGameStarted":
-      return gameStarted(read(gameStartedSchema));
     case "PartyDisbanded":
       return { type: "disbanded", payload: {} };
     default:
@@ -58,11 +54,3 @@ const membersUpdated = (
   list?.members.length
     ? { type: "membersUpdated", payload: { members: list.members } }
     : null;
-
-const gameStarted = (
-  started: z.infer<typeof gameStartedSchema> | null,
-): PartyEvent | null =>
-  started && {
-    type: "gameStarted",
-    payload: { gameId: started.lobbyId, playerIds: started.players ?? [] },
-  };

@@ -47,10 +47,7 @@ export type RecordedRequest = {
   headers: IncomingMessage["headers"];
 };
 
-type Mishap =
-  | { kind: "fail"; status: number }
-  | { kind: "lose-response" }
-  | { kind: "never-answer" };
+type Mishap = { kind: "fail"; status: number } | { kind: "lose-response" };
 
 type GameLike = Pick<FakeGame, "start" | "stop"> & { state(): unknown };
 
@@ -76,7 +73,12 @@ export class FakeGeoGuessr implements AsyncDisposable {
     socket: SocketName;
     message: { code: string };
   }[] = [];
-  readonly connections: { socket: SocketName; params: URLSearchParams }[] = [];
+  readonly connections: {
+    socket: SocketName;
+    params: URLSearchParams;
+    /** `Date.now()` when it was accepted. */
+    at: number;
+  }[] = [];
   readonly closes: { socket: SocketName; code: number }[] = [];
   /** Game frames sent while no game socket was there to get them. */
   readonly undelivered: string[] = [];
@@ -96,6 +98,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
   readonly #partySubscribers = new Set<WebSocket>();
   readonly #gameSubscribers = new Set<WebSocket>();
   readonly #mishaps = new Map<Route, Mishap>();
+  readonly #unanswered = new Set<Route>();
   readonly #onRequest = new Map<Route, () => void>();
   readonly #refuseUntil: Record<SocketName, number> = {
     notification: 0,
@@ -113,6 +116,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
   #startWithoutGameId = false;
   #brokenPage = false;
   #signedOut = false;
+  #noParty = false;
 
   static async start(mode: { rounds: number } | "recorded" = { rounds: 2 }) {
     const fake = new FakeGeoGuessr(mode);
@@ -166,9 +170,9 @@ export class FakeGeoGuessr implements AsyncDisposable {
     this.#mishaps.set(route, { kind: "lose-response" });
   }
 
-  /** The next request to `route` is never answered at all. */
-  neverAnswerNext(route: Route) {
-    this.#mishaps.set(route, { kind: "never-answer" });
+  /** From now on, requests to `route` are never answered at all. */
+  stopAnswering(route: Route) {
+    this.#unanswered.add(route);
   }
 
   /** Runs `action` when the next request to `route` arrives, before answering it. */
@@ -192,7 +196,9 @@ export class FakeGeoGuessr implements AsyncDisposable {
     this.#signedOut = true;
   }
 
+  /** The account has no party: the page leaves it out, the API has none. */
   removeParty() {
+    this.#noParty = true;
     this.partyPageProps = {};
   }
 
@@ -233,7 +239,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
 
   /** "Abort game" from a browser signed in as the bot. */
   abortFromBrowser() {
-    this.#detachParty("NoGame", null);
+    this.#detachParty();
     this.#game?.stop();
     // In the logs the party always heard first, GameAborted ~3ms later.
     setTimeout(() => this.sendGameFrame({ code: "GameAborted" }), 3);
@@ -241,11 +247,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
 
   /** The party reports the abort; the game socket never does. */
   detachPartyFromGame() {
-    this.#detachParty("NoGame", null);
-  }
-
-  startAnotherGameFromBrowser() {
-    this.#detachParty("Ongoing", "another-game-id");
+    this.#detachParty();
   }
 
   disbandFromBrowser() {
@@ -344,7 +346,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
 
     const mishap = route ? this.#mishaps.get(route) : undefined;
     if (route && mishap) this.#mishaps.delete(route);
-    if (mishap?.kind === "never-answer") return;
+    if (route && this.#unanswered.has(route)) return;
     if (mishap?.kind === "fail") return send(res, mishap.status, "Bad Gateway");
 
     const answer = route
@@ -359,6 +361,9 @@ export class FakeGeoGuessr implements AsyncDisposable {
       case "partyPage":
         return { status: 200, body: this.#partyPage() };
       case "activeParty":
+        return this.#noParty
+          ? { status: 204, body: "" }
+          : { status: 200, body: this.party };
       case "party":
         return { status: 200, body: this.party };
       case "createParty":
@@ -462,8 +467,8 @@ export class FakeGeoGuessr implements AsyncDisposable {
       socket.send(JSON.stringify(frame));
   }
 
-  #detachParty(gameState: string, lobbyId: string | null) {
-    this.party = { ...this.party, gameState, lobbyId };
+  #detachParty() {
+    this.party = { ...this.party, gameState: "NoGame", lobbyId: null };
     this.sendPartyFrame("PartyUpdated", this.party);
   }
 
@@ -481,7 +486,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
 
     server.on("connection", (socket, req) => {
       const params = new URL(req.url ?? "/", "ws://fake").searchParams;
-      this.connections.push({ socket: name, params });
+      this.connections.push({ socket: name, params, at: Date.now() });
       socket.on("close", (code) => {
         this.closes.push({ socket: name, code });
         this.#partySubscribers.delete(socket);

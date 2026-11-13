@@ -1,6 +1,6 @@
 import type { ClientContext } from "../../core/context";
 import { Emitter, type Listener, type Unsubscribe } from "../../core/emitter";
-import { ClosedError } from "../../errors";
+import { GeoGuessrError } from "../../errors";
 import { partyTopic } from "../../protocol/messages";
 import { GEOGUESSR_ORIGIN, routes } from "../../protocol/routes";
 import type { NotificationFrame } from "../../protocol/schemas/frames";
@@ -261,6 +261,6 @@ export class Party implements AsyncDisposable {
 
   #assertUsable() {
     this.#context.lifetime.assertOpen();
-    if (this.#disbanded) throw new ClosedError("The party was disbanded");
+    if (this.#disbanded) throw new GeoGuessrError("The party was disbanded");
   }
 }

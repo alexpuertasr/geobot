@@ -3,12 +3,9 @@ export type { Unsubscribe } from "./core/emitter";
 export {
   APIError,
   AuthenticationError,
-  ClosedError,
   ConnectionError,
-  ConnectionLostError,
   GeoGuessrError,
   NotEnoughPlayersError,
-  UnexpectedResponseError,
 } from "./errors";
 export type { BaseUrls, GeoGuessrOptions, SdkLogger } from "./options";
 export type { GameFrame } from "./protocol/schemas/frames";

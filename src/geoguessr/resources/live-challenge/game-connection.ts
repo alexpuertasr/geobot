@@ -1,20 +1,18 @@
 import type { ClientContext } from "../../core/context";
 import { deferred } from "../../core/deferred";
 import { parseOrLog } from "../../core/parse";
-import {
-  NEVER_OPENED_MAX_ATTEMPTS,
-  type ReconnectContext,
-} from "../../core/socket/reconnect-state";
 import { ReconnectingSocket } from "../../core/socket/reconnecting-socket";
-import type { ConnectionLostError } from "../../errors";
-import { isFinalClose } from "../../protocol/close-codes";
+import type { ConnectionError } from "../../errors";
 import { messages } from "../../protocol/messages";
 import { routes } from "../../protocol/routes";
 import { type GameFrame, gameFrameSchema } from "../../protocol/schemas/frames";
 
 /** How long `open()` waits for the server to confirm the bot's connection. */
 const CONFIRMATION_TIMEOUT_MS = 10_000;
-/** How long the socket may stay down before the game is given up. */
+/**
+ * How long the socket may stay down before the game is given up — where the
+ * web client gives a Live Challenge up on its first server restart.
+ */
 const RECONNECT_BUDGET_MS = 60_000;
 
 export type GameConnectionOptions = {
@@ -25,9 +23,7 @@ export type GameConnectionOptions = {
   isGameLive: () => boolean;
   onFrame: (frame: GameFrame) => void;
   onState: (state: unknown) => void;
-  /** A reconnection was confirmed and the game state re-read. */
-  onReconnected: () => void;
-  onLost: (error: ConnectionLostError) => void;
+  onLost: (error: ConnectionError) => void;
 };
 
 /**
@@ -41,7 +37,6 @@ export class GameConnection {
   readonly #socket: ReconnectingSocket;
   readonly #confirmed = deferred<void>();
   #awaitingConfirmation = false;
-  #confirmations = 0;
 
   constructor(options: GameConnectionOptions) {
     const { context, isGameLive, onLost } = options;
@@ -53,7 +48,8 @@ export class GameConnection {
       logger: context.logger,
       onOpen: () => this.#subscribe(),
       onMessage: (data) => this.#onMessage(data),
-      shouldReconnect: (drop) => isGameLive() && shouldReconnect(drop),
+      shouldReconnect: (downForMs) =>
+        isGameLive() && downForMs < RECONNECT_BUDGET_MS,
       onLost,
     });
   }
@@ -165,12 +161,8 @@ export class GameConnection {
 
   /** What the web client does on each confirmed connection. */
   async #resync() {
-    this.#confirmations += 1;
-    const isReconnect = this.#confirmations > 1;
-
     await this.#join();
     await this.fetchState();
-    if (isReconnect) this.#options.onReconnected();
   }
 
   /** `POST /api/lobby/{id}/join`, the web client's way into a game. */
@@ -187,18 +179,3 @@ export class GameConnection {
     }
   }
 }
-
-/**
- * Beyond the web client, which gives a Live Challenge up on its first server
- * restart: one dropped socket shouldn't end a game.
- */
-const shouldReconnect = ({
-  close,
-  wasConnected,
-  attempt,
-  downSince,
-}: ReconnectContext) =>
-  !isFinalClose(close) &&
-  (wasConnected
-    ? Date.now() - downSince < RECONNECT_BUDGET_MS
-    : attempt <= NEVER_OPENED_MAX_ATTEMPTS);

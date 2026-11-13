@@ -1,4 +1,4 @@
-import { ClosedError } from "../errors";
+import { GeoGuessrError } from "../errors";
 import type { SdkLogger } from "../options";
 
 export type Closeable = { close(): Promise<void> };
@@ -17,7 +17,9 @@ export class Lifetime {
   }
 
   assertOpen() {
-    if (this.#closing) throw new ClosedError("The GeoGuessr client is closed");
+    if (this.#closing) {
+      throw new GeoGuessrError("The GeoGuessr client is closed");
+    }
   }
 
   /** Returns the handle's deregistration. A handle opened while closing is closed at once. */

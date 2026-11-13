@@ -1,6 +1,7 @@
 /**
- * Every error the SDK throws extends `GeoGuessrError`, so one `instanceof`
- * catches them all; the subclasses say what went wrong.
+ * Every error the SDK throws is a `GeoGuessrError` — for a closed handle or
+ * an unexpected response, the base class itself; the subclasses are the
+ * failures callers act on.
  */
 export class GeoGuessrError extends Error {
   override name = "GeoGuessrError";
@@ -43,52 +44,19 @@ export class NotEnoughPlayersError extends APIError {
   override name = "NotEnoughPlayersError";
 }
 
-/** GeoGuessr answered 2xx, but not with the shape the SDK expects. */
-export class UnexpectedResponseError extends GeoGuessrError {
-  override name = "UnexpectedResponseError";
-
-  readonly url: string;
-  readonly body: unknown;
-
-  constructor({
-    url,
-    body,
-    reason,
-  }: { url: string; body: unknown; reason: string }) {
-    super(`Unexpected response from ${new URL(url).pathname}: ${reason}`);
-    this.url = url;
-    this.body = body;
-  }
-}
-
-/** GeoGuessr couldn't be reached: a request got no answer, or a socket was lost. */
+/**
+ * GeoGuessr couldn't be reached: a request got no answer, or a socket closed
+ * for good — then `code` is its close code.
+ */
 export class ConnectionError extends GeoGuessrError {
   override name = "ConnectionError";
-}
 
-/** A socket closed and could not (or must not) be reconnected. */
-export class ConnectionLostError extends ConnectionError {
-  override name = "ConnectionLostError";
+  readonly code: number | null;
 
-  readonly code: number;
-  readonly reason: string;
-
-  constructor({
-    socket,
-    code,
-    reason,
-  }: { socket: string; code: number; reason: string }) {
-    super(
-      `The ${socket} socket closed with ${code}${reason ? ` (${reason})` : ""}`,
-    );
-    this.code = code;
-    this.reason = reason;
+  constructor(message: string, options?: { cause?: unknown; code?: number }) {
+    super(message, { cause: options?.cause });
+    this.code = options?.code ?? null;
   }
-}
-
-/** A handle was used after it, or its client, was closed. */
-export class ClosedError extends GeoGuessrError {
-  override name = "ClosedError";
 }
 
 /**

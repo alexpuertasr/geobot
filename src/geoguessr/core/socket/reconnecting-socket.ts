@@ -1,22 +1,30 @@
 import WebSocket from "ws";
 
-import { ConnectionLostError } from "../../errors";
+import { ConnectionError } from "../../errors";
 import type { SdkLogger } from "../../options";
-import { CLOSE_INTENTIONAL, type CloseInfo } from "../../protocol/close-codes";
+import {
+  CLOSE_INTENTIONAL,
+  type CloseInfo,
+  isFinalClose,
+} from "../../protocol/close-codes";
 import { deferred } from "../deferred";
 import type { WebClientIdentity } from "../identity";
 import { parseJsonOr } from "../parse";
 
-import { reconnectDelay } from "./backoff";
 import { Heartbeat } from "./heartbeat";
-import { type ReconnectContext, ReconnectState } from "./reconnect-state";
 
 /** A server that accepts the connection but never upgrades it becomes a 1006. */
 const HANDSHAKE_TIMEOUT_MS = 10_000;
 /** How long `close()` waits for the closing handshake before cutting it. */
 const CLOSE_TIMEOUT_MS = 1_000;
-/** How long a connection must stay up, frame-less, to count as healthy. */
-const HEALTHY_AFTER_MS = 5_000;
+/**
+ * The wait before each try since the socket was last open. Never zero: a
+ * server that accepts connections and drops them straight away is retried
+ * once a second, not in a tight loop.
+ */
+const RECONNECT_DELAYS_MS = [1_000, 2_000, 5_000];
+/** A socket that has never opened gives up after this many tries. */
+const MAX_TRIES_NEVER_OPENED = 5;
 
 const NOT_JSON = Symbol("not JSON");
 
@@ -29,27 +37,35 @@ export type ReconnectingSocketOptions = {
   /** Runs on every open, first or not: (re)send subscriptions here. */
   onOpen: () => void;
   onMessage: (data: unknown) => void;
-  shouldReconnect: (context: ReconnectContext) => boolean;
+  /**
+   * Asked after a drop the socket could recover from, once it has opened:
+   * whether to keep trying, given how long it has been down.
+   */
+  shouldReconnect: (downForMs: number) => boolean;
   /** Runs once if it gives up after having been connected. */
-  onLost: (error: ConnectionLostError) => void;
+  onLost: (error: ConnectionError) => void;
 };
 
 /**
- * A WebSocket that behaves like the web client's — its identity, heartbeat,
- * reconnect backoff and close code 4000 — and whose `close()` waits for the
- * closing handshake: a Lambda frozen mid-close would keep the connection
- * half-open and replay its buffered frames on the next thaw.
+ * A WebSocket that presents itself like the web client's — its identity,
+ * heartbeat and close code 4000 — reconnects after a drop, and whose
+ * `close()` waits for the closing handshake: a Lambda frozen mid-close would
+ * keep the connection half-open and replay its buffered frames on the next
+ * thaw.
  */
 export class ReconnectingSocket {
   readonly #options: ReconnectingSocketOptions;
-  readonly #state = new ReconnectState();
   readonly #heartbeat = new Heartbeat();
   #socket: WebSocket | null = null;
   #firstOpen: PromiseWithResolvers<void> | null = null;
-  #lost: ConnectionLostError | null = null;
+  #lost: ConnectionError | null = null;
   #reconnectTimer: ReturnType<typeof setTimeout> | undefined;
-  #healthyTimer: ReturnType<typeof setTimeout> | undefined;
   #closed = false;
+  #wasConnected = false;
+  /** Tries since the socket was last open. */
+  #tries = 0;
+  /** When the socket went down (`Date.now()`); 0 while it's up. */
+  #downSince = 0;
 
   constructor(options: ReconnectingSocketOptions) {
     this.#options = options;
@@ -88,7 +104,8 @@ export class ReconnectingSocket {
   }
 
   #open() {
-    const socket = new WebSocket(this.#nextUrl(), {
+    this.#tries += 1;
+    const socket = new WebSocket(this.#url(), {
       headers: this.#options.identity.browserHeaders(),
       handshakeTimeout: HANDSHAKE_TIMEOUT_MS,
     });
@@ -109,16 +126,13 @@ export class ReconnectingSocket {
     );
   }
 
-  #nextUrl() {
+  #url() {
     const { url, identity } = this.#options;
-    const { attempt, afterRestart } = this.#state.beginAttempt();
-
     const params = new URLSearchParams({
       ...(identity.clientVersion ? { c: identity.clientVersion } : {}),
       tabId: identity.tabId,
-      attempt: String(attempt),
+      attempt: String(this.#tries),
       visibility: "visible",
-      ...(afterRestart ? { reconnect: "true" } : {}),
     });
     return `${url}?${params}`;
   }
@@ -131,19 +145,15 @@ export class ReconnectingSocket {
     }
 
     this.#options.logger.info(`📡 ${this.#options.name} socket open`);
-    this.#state.markOpened();
-    this.#healthyTimer = setTimeout(
-      () => this.#state.markHealthy(),
-      HEALTHY_AFTER_MS,
-    );
+    this.#wasConnected = true;
+    this.#tries = 0;
+    this.#downSince = 0;
     this.#heartbeat.start(socket, () => this.#onMissedPong(socket));
     this.#options.onOpen();
     this.#firstOpen?.resolve();
   }
 
   #onMessage(raw: string) {
-    this.#state.markHealthy();
-
     const data = parseJsonOr(raw, NOT_JSON);
     if (data === NOT_JSON) {
       this.#options.logger.error(`📡 ${this.#options.name} frame unparsed`, {
@@ -176,30 +186,42 @@ export class ReconnectingSocket {
     if (socket !== this.#socket || this.#closed) return;
     this.#socket = null;
     this.#stopTimers();
+    if (this.#downSince === 0) this.#downSince = Date.now();
 
-    const context = this.#state.recordDrop(close);
-    if (this.#options.shouldReconnect(context)) {
-      this.#scheduleReconnect(context);
+    if (this.#canReconnect(close)) {
+      this.#scheduleReconnect(close);
     } else {
-      this.#giveUp(context);
+      this.#giveUp(close);
     }
   }
 
-  #scheduleReconnect({ close, attempt }: ReconnectContext) {
-    const delay = reconnectDelay(attempt);
+  #canReconnect(close: CloseInfo) {
+    if (isFinalClose(close)) return false;
+    if (!this.#wasConnected) return this.#tries < MAX_TRIES_NEVER_OPENED;
+    return this.#options.shouldReconnect(Date.now() - this.#downSince);
+  }
+
+  #scheduleReconnect(close: CloseInfo) {
+    const delay =
+      RECONNECT_DELAYS_MS[
+        Math.min(this.#tries, RECONNECT_DELAYS_MS.length - 1)
+      ];
     this.#options.logger.warn(
       `📡 ${this.#options.name} socket closed, reconnecting in ${delay}ms`,
-      { ...close, attempt },
+      { ...close, tries: this.#tries },
     );
     this.#reconnectTimer = setTimeout(() => this.#open(), delay);
   }
 
-  #giveUp({ close, wasConnected }: ReconnectContext) {
+  #giveUp(close: CloseInfo) {
     const { name, logger, onLost } = this.#options;
     logger.warn(`📡 ${name} socket closed, not reconnecting`, { ...close });
 
-    this.#lost = new ConnectionLostError({ socket: name, ...close });
-    if (wasConnected) onLost(this.#lost);
+    this.#lost = new ConnectionError(
+      `The ${name} socket closed with ${close.code}${close.reason ? ` (${close.reason})` : ""}`,
+      { code: close.code },
+    );
+    if (this.#wasConnected) onLost(this.#lost);
     this.#firstOpen?.reject(this.#lost);
   }
 
@@ -223,15 +245,13 @@ export class ReconnectingSocket {
 
   #stopTimers() {
     this.#heartbeat.stop();
-    clearTimeout(this.#healthyTimer);
     clearTimeout(this.#reconnectTimer);
   }
 
   #closedError() {
-    return new ConnectionLostError({
-      socket: this.#options.name,
-      code: CLOSE_INTENTIONAL,
-      reason: "closed by the client",
-    });
+    return new ConnectionError(
+      `The ${this.#options.name} socket was closed by the client`,
+      { code: CLOSE_INTENTIONAL },
+    );
   }
 }

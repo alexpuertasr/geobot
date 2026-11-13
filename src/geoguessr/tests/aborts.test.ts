@@ -39,17 +39,6 @@ describe.concurrent("when a game is aborted", () => {
     expect(result).toMatchObject({ outcome: "aborted", reason: "gameAborted" });
   });
 
-  test("ends as aborted when the party moves on to another game", async () => {
-    await using fake = await FakeGeoGuessr.start();
-    await using geoguessr = clientFor(fake);
-    const game = await startGame(geoguessr);
-    game.once("roundStarted", () => fake.startAnotherGameFromBrowser());
-
-    const result = await gameOver(game);
-
-    expect(result).toMatchObject({ outcome: "aborted", reason: "gameAborted" });
-  });
-
   test("ends as aborted when the party is disbanded mid-game", async () => {
     await using fake = await FakeGeoGuessr.start();
     await using geoguessr = clientFor(fake);

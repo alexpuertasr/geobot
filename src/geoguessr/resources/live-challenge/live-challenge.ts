@@ -4,9 +4,9 @@ import { abortable } from "../../core/abortable";
 import type { ClientContext } from "../../core/context";
 import { deferred } from "../../core/deferred";
 import { Emitter, type Listener, type Unsubscribe } from "../../core/emitter";
-import { isTransient, retryDelay } from "../../core/http/retry";
+import { isTransient } from "../../core/http/http-client";
 import { parseOrLog } from "../../core/parse";
-import { ClosedError, ConnectionLostError } from "../../errors";
+import { ConnectionError, GeoGuessrError } from "../../errors";
 import { routes } from "../../protocol/routes";
 import type { GameFrame } from "../../protocol/schemas/frames";
 import {
@@ -15,7 +15,6 @@ import {
   leaderboardsSchema,
   liveChallengeStateSchema,
 } from "../../protocol/schemas/live-challenge";
-import type { PartyData } from "../../protocol/schemas/party";
 import type { Party } from "../party/party";
 
 import type { AbortReason, GameResult, LiveChallengeEvents } from "./events";
@@ -31,6 +30,7 @@ import { StandingsSettler } from "./standings-settler";
  * otherwise leave everyone stuck on a finished round.
  */
 const ADVANCE_RETRIES = 2;
+const ADVANCE_RETRY_DELAY_MS = 1_000;
 
 type Status =
   | "connecting"
@@ -163,7 +163,7 @@ export class LiveChallenge implements AsyncDisposable {
 
   /**
    * Closes the connection — the game itself goes on — and rejects a pending
-   * `done()` with `ClosedError`. Done for you when the game ends.
+   * `done()`. Done for you when the game ends.
    */
   close(): Promise<void> {
     this.#closing ??= this.#shutDown();
@@ -200,7 +200,9 @@ export class LiveChallenge implements AsyncDisposable {
       case "failed":
         throw this.#failure;
       default:
-        throw new ClosedError(`The game was ${this.#status} while connecting`);
+        throw new GeoGuessrError(
+          `The game was ${this.#status} while connecting`,
+        );
     }
   }
 
@@ -307,7 +309,7 @@ export class LiveChallenge implements AsyncDisposable {
       toRound,
       error,
     });
-    await sleep(retryDelay(attempt));
+    await sleep(ADVANCE_RETRY_DELAY_MS);
     return this.#requestAdvance(toRound, attempt + 1);
   }
 
@@ -351,7 +353,7 @@ export class LiveChallenge implements AsyncDisposable {
   }
 
   #fail(error: unknown) {
-    if (this.#status === "finished" && error instanceof ConnectionLostError) {
+    if (this.#status === "finished" && error instanceof ConnectionError) {
       // Losing the socket while the standings settle only cuts the wait.
       this.#onStandingsSettled();
       return;
@@ -377,7 +379,7 @@ export class LiveChallenge implements AsyncDisposable {
       this.#status = "closed";
       this.#connection.stopWaiting();
       this.#result.reject(
-        new ClosedError("The game was closed before it ended"),
+        new GeoGuessrError("The game was closed before it ended"),
       );
     }
   }
@@ -408,34 +410,25 @@ export class LiveChallenge implements AsyncDisposable {
       isGameLive: () => this.isLive,
       onFrame: (frame) => this.#onFrame(frame),
       onState: (state) => this.#applyState(state),
-      onReconnected: () => this.#recheckParty(),
       onLost: (error) => this.#fail(error),
     });
   }
 
-  /** The party is where an abort shows first, and the only place a disband shows. */
+  /**
+   * The party hears of an abort too — and, since it re-reads itself after a
+   * reconnect, of one that happened while both sockets were down. It's the
+   * only place a disband shows.
+   */
   #watchParty(): Unsubscribe {
     const unsubscribes = [
       this.party.on("updated", ({ party }) => {
-        if (isDetached(party, this.id)) this.#abort("gameAborted");
+        if (party.gameState === "NoGame") this.#abort("gameAborted");
       }),
       this.party.on("disbanded", () => this.#abort("partyDisbanded")),
     ];
     return () => {
       for (const unsubscribe of unsubscribes) unsubscribe();
     };
-  }
-
-  /** An abort only detaches the party: if it happened while we were away, only the party can tell. */
-  #recheckParty() {
-    if (!this.isLive) return;
-
-    this.party.refresh().catch((error: unknown) => {
-      this.#context.logger.warn("🎮 Could not re-check the party", {
-        partyId: this.party.id,
-        error,
-      });
-    });
   }
 
   #onStall(round: number) {
@@ -454,10 +447,3 @@ export class LiveChallenge implements AsyncDisposable {
     this.#fail(error);
   }
 }
-
-/** Aborting moves the party to no game, or on to another one. */
-const isDetached = (party: PartyData, gameId: string) =>
-  party.gameState === "NoGame" ||
-  (party.gameState === "Ongoing" &&
-    !!party.lobbyId &&
-    party.lobbyId !== gameId);

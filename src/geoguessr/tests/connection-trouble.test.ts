@@ -8,7 +8,7 @@ import {
   hostLikePlayGame,
   startGame,
 } from "./support/helpers";
-import { ConnectionLostError } from "..";
+import { ConnectionError } from "..";
 
 describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
   // Nov 10: the game socket closed with 1006 mid-round and the game was lost.
@@ -54,13 +54,14 @@ describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
 
     fake.handGameSocketToAnotherSession();
 
-    await expect(gameOver(game, { within: 3_000 })).rejects.toThrow(
-      ConnectionLostError,
-    );
+    const failure = gameOver(game, { within: 3_000 });
+
+    await expect(failure).rejects.toThrow(ConnectionError);
+    await expect(failure).rejects.toMatchObject({ code: 4100 });
   });
 
-  // Oct 15: a 1012 closed the party socket, it never came back, and an
-  // abort went unnoticed for minutes.
+  // Oct 15: a 1012 closed the party socket, and the old client never
+  // reconnected it.
   test("re-joins the party after GeoGuessr restarts its notification server", async () => {
     await using fake = await FakeGeoGuessr.start();
     await using geoguessr = clientFor(fake);
@@ -69,16 +70,18 @@ describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
 
     fake.restartNotificationServer();
 
-    await vi.waitFor(() => {
-      const subscribes = fake.received.filter(
-        ({ message }) => message.code === "Subscribe",
-      );
-      expect(subscribes).toHaveLength(2);
-    });
-    expect(fake.connections.at(-1)?.params.get("reconnect")).toBe("true");
+    await vi.waitFor(
+      () => {
+        const subscribes = fake.received.filter(
+          ({ message }) => message.code === "Subscribe",
+        );
+        expect(subscribes).toHaveLength(2);
+      },
+      { timeout: 3_000 },
+    );
   });
 
-  test("keeps backing off while GeoGuessr drops every connection right after accepting it", async () => {
+  test("waits a second between reconnects while GeoGuessr drops every connection right after accepting it", async () => {
     await using fake = await FakeGeoGuessr.start();
     await using geoguessr = clientFor(fake);
     const party = await geoguessr.parties.current();
@@ -90,18 +93,12 @@ describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
 
     fake.dropEveryConnection("notification");
 
-    await vi.waitFor(
-      () => {
-        const reconnects = fake.connections.slice(1, 5);
-        expect(reconnects.map(({ params }) => params.get("attempt"))).toEqual([
-          "1",
-          "2",
-          "3",
-          "4",
-        ]);
-      },
-      { timeout: 5_000 },
-    );
+    await vi.waitFor(() => expect(fake.connections).toHaveLength(4), {
+      timeout: 6_000,
+    });
+    const [, ...reconnects] = fake.connections.map(({ at }) => at);
+    const gaps = reconnects.slice(1).map((at, i) => at - (reconnects[i] ?? 0));
+    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(950);
   });
 
   test("reads the game state when a round runs late and no frame said it ended", async () => {

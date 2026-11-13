@@ -1,6 +1,5 @@
-import type { ConnectionLostError } from "../errors";
+import { type ConnectionError, GeoGuessrError } from "../errors";
 import type { SdkLogger } from "../options";
-import { isFinalClose } from "../protocol/close-codes";
 import { messages } from "../protocol/messages";
 import {
   type NotificationFrame,
@@ -10,7 +9,6 @@ import {
 import type { Unsubscribe } from "./emitter";
 import type { WebClientIdentity } from "./identity";
 import { parseJsonOr, parseOrLog } from "./parse";
-import { NEVER_OPENED_MAX_ATTEMPTS } from "./socket/reconnect-state";
 import { ReconnectingSocket } from "./socket/reconnecting-socket";
 
 export type TopicSubscriber = {
@@ -18,17 +16,18 @@ export type TopicSubscriber = {
   /** The socket reconnected: whatever it carried while down is lost. */
   onReconnect?: () => void;
   /** The socket gave up for good (taken over, or the session rejected). */
-  onLost?: (error: ConnectionLostError) => void;
+  onLost?: (error: ConnectionError) => void;
 };
 
 /**
- * GeoGuessr's notification socket, shared like the web client shares it: one
- * socket, ref-counted topic subscriptions, all re-sent after a reconnect.
+ * GeoGuessr's notification socket: one per client, one subscriber per topic,
+ * every subscription re-sent after a reconnect. Like the web client's, once
+ * it has opened it never gives up.
  */
 export class NotificationSocket {
   readonly #logger: SdkLogger;
   readonly #socket: ReconnectingSocket;
-  readonly #topics = new Map<string, Set<TopicSubscriber>>();
+  readonly #subscribers = new Map<string, TopicSubscriber>();
   #opens = 0;
 
   constructor(options: {
@@ -42,12 +41,12 @@ export class NotificationSocket {
       name: "notification",
       onOpen: () => this.#onOpen(),
       onMessage: (data) => this.#dispatch(data),
-      // Like the web client: once it has opened, it never gives up.
-      shouldReconnect: ({ close, wasConnected, attempt }) =>
-        !isFinalClose(close) &&
-        (wasConnected || attempt <= NEVER_OPENED_MAX_ATTEMPTS),
-      onLost: (error) =>
-        this.#forEachSubscriber((subscriber) => subscriber.onLost?.(error)),
+      shouldReconnect: () => true,
+      onLost: (error) => {
+        for (const subscriber of this.#subscribers.values()) {
+          subscriber.onLost?.(error);
+        }
+      },
     });
   }
 
@@ -59,8 +58,17 @@ export class NotificationSocket {
     topic: string,
     subscriber: TopicSubscriber,
   ): Promise<Unsubscribe> {
-    this.#add(topic, subscriber);
-    const unsubscribe = () => this.#remove(topic, subscriber);
+    if (this.#subscribers.has(topic)) {
+      throw new GeoGuessrError(`Already subscribed to ${topic}`);
+    }
+    this.#subscribers.set(topic, subscriber);
+    this.#socket.send(messages.subscribe(topic));
+
+    const unsubscribe = () => {
+      if (this.#subscribers.get(topic) !== subscriber) return;
+      this.#subscribers.delete(topic);
+      this.#socket.send(messages.unsubscribe(topic));
+    };
 
     try {
       await this.#socket.connect();
@@ -75,29 +83,15 @@ export class NotificationSocket {
     return this.#socket.close();
   }
 
-  #add(topic: string, subscriber: TopicSubscriber) {
-    const subscribers = this.#topics.get(topic) ?? new Set();
-    if (subscribers.size === 0) {
-      this.#topics.set(topic, subscribers);
-      this.#send("subscribe", topic);
-    }
-    subscribers.add(subscriber);
-  }
-
-  #remove(topic: string, subscriber: TopicSubscriber) {
-    const subscribers = this.#topics.get(topic);
-    if (!subscribers?.delete(subscriber) || subscribers.size > 0) return;
-
-    this.#topics.delete(topic);
-    this.#send("unsubscribe", topic);
-  }
-
   #onOpen() {
-    this.#forEachTopic((topic) => this.#send("subscribe", topic));
+    for (const topic of this.#subscribers.keys()) {
+      this.#socket.send(messages.subscribe(topic));
+    }
 
     this.#opens += 1;
-    if (this.#opens > 1) {
-      this.#forEachSubscriber((subscriber) => subscriber.onReconnect?.());
+    if (this.#opens === 1) return;
+    for (const subscriber of this.#subscribers.values()) {
+      subscriber.onReconnect?.();
     }
   }
 
@@ -110,23 +104,8 @@ export class NotificationSocket {
 
     this.#logger.info(`🛰️ [Notification] ${frame.code}`, { data });
 
-    const parsedFrame = { ...frame, payload: parsePayload(frame.payload) };
-    const subscribers = this.#topics.get(frame.topic ?? "") ?? [];
-    for (const subscriber of [...subscribers]) subscriber.onFrame(parsedFrame);
-  }
-
-  #send(message: "subscribe" | "unsubscribe", topic: string) {
-    this.#socket.send(messages[message](topic));
-  }
-
-  #forEachTopic(action: (topic: string) => void) {
-    for (const topic of this.#topics.keys()) action(topic);
-  }
-
-  #forEachSubscriber(action: (subscriber: TopicSubscriber) => void) {
-    for (const subscribers of this.#topics.values()) {
-      for (const subscriber of subscribers) action(subscriber);
-    }
+    const subscriber = this.#subscribers.get(frame.topic ?? "");
+    subscriber?.onFrame({ ...frame, payload: parsePayload(frame.payload) });
   }
 }
 

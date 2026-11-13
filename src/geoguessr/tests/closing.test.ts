@@ -7,7 +7,6 @@ import {
   hostLikePlayGame,
   startGame,
 } from "./support/helpers";
-import { ClosedError } from "..";
 
 /*
  * The old client left sockets open when a Lambda returned; frozen, they
@@ -43,14 +42,16 @@ describe.concurrent("closing", () => {
     expect(fake.closes).toContainEqual({ socket: "game", code: 4000 });
   });
 
-  test("closing mid-game rejects done() with ClosedError, and the client can't be used after", async () => {
+  test("closing mid-game rejects done(), and the client can't be used after", async () => {
     await using fake = await FakeGeoGuessr.start();
     const geoguessr = clientFor(fake);
     const game = await startGame(geoguessr);
 
     await geoguessr.close();
 
-    await expect(game.done()).rejects.toThrow(ClosedError);
-    await expect(geoguessr.parties.current()).rejects.toThrow(ClosedError);
+    await expect(game.done()).rejects.toThrow("closed before it ended");
+    await expect(geoguessr.parties.current()).rejects.toThrow(
+      "client is closed",
+    );
   });
 });

@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import drifted from "./fixtures/drifted-payloads.json";
 import { FakeGeoGuessr } from "./support/fake-geoguessr";
 import { clientFor } from "./support/helpers";
-import { AuthenticationError, ClosedError, ConnectionError } from "..";
+import { AuthenticationError, ConnectionError } from "..";
 
 describe("finding the current party", () => {
   test("reads the party and its members from the party page", async () => {
@@ -27,6 +27,16 @@ describe("finding the current party", () => {
     expect(await geoguessr.parties.current()).toBeNull();
   });
 
+  test("asks the parties API when the party page leaves the party out, in case GeoGuessr renamed the field", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    fake.partyPageProps = { currentParty: fake.party };
+
+    const party = await geoguessr.parties.current();
+
+    expect(party?.id).toBe(fake.party.partyId);
+  });
+
   test("falls back to the parties API when the party page can't be read", async () => {
     await using fake = await FakeGeoGuessr.start();
     await using geoguessr = clientFor(fake);
@@ -48,12 +58,13 @@ describe("finding the current party", () => {
     );
   });
 
-  test("gives up with a ConnectionError when GeoGuessr doesn't answer in time", async () => {
+  test("gives up with a ConnectionError once three tries go unanswered", async () => {
     await using fake = await FakeGeoGuessr.start();
-    await using geoguessr = clientFor(fake, { timeout: 300 });
-    fake.neverAnswerNext("partyPage");
+    await using geoguessr = clientFor(fake, { timeout: 200 });
+    fake.stopAnswering("partyPage");
 
     await expect(geoguessr.parties.current()).rejects.toThrow(ConnectionError);
+    expect(fake.requestsTo("partyPage")).toHaveLength(3);
   });
 
   test("retries the party page when GeoGuessr answers 502", async () => {
@@ -132,7 +143,7 @@ describe("replacing the party, as CreateParty does every weekday", () => {
     await party?.disband();
 
     expect(fake.requestsTo("disbandParty")).toHaveLength(1);
-    await expect(party?.startGame()).rejects.toThrow(ClosedError);
+    await expect(party?.startGame()).rejects.toThrow("disbanded");
   });
 
   test("creates a Live Challenge party with the requested rounds and default settings", async () => {

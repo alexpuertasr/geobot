@@ -12,6 +12,7 @@ export type PartyPage = {
   buildId: string | null;
   /** The page still renders when signed out — just without a party. */
   signedOut: boolean;
+  /** `undefined` when there's no party: the page then leaves the field out. */
   party: unknown;
   memberList: unknown;
 };
@@ -35,7 +36,11 @@ export const readPartyPage = (
   });
   if (!page) return null;
 
-  const { statusCode, initialParty, initialMemberInfo } = page.props.pageProps;
+  const { pageProps } = page.props;
+  // The HTTP log only keeps the start of the HTML.
+  logger.info("📄 Party page", { buildId: page.buildId, pageProps });
+
+  const { statusCode, initialParty, initialMemberInfo } = pageProps;
   return {
     buildId: page.buildId ?? null,
     signedOut: statusCode === 401 || statusCode === 403,

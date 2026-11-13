@@ -84,7 +84,3 @@ export const createPartyRequestSchema = z
 export const startGameResponseSchema = z
   .object({ gameLobbyId: z.string() })
   .loose();
-
-export const gameStartedSchema = z
-  .object({ lobbyId: z.string(), players: z.array(z.string()).nullish() })
-  .loose();

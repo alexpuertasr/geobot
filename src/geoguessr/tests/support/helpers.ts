@@ -28,7 +28,7 @@ export const recordingLogger = () => {
 /** An SDK client pointed at the fake, with its logs kept for assertions. */
 export const clientFor = (
   fake: FakeGeoGuessr,
-  options: { timeout?: number; maxRetries?: number } = {},
+  options: { timeout?: number } = {},
 ) => {
   const { logger, entries } = recordingLogger();
   const geoguessr = new GeoGuessr({

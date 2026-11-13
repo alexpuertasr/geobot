@@ -41,7 +41,9 @@ export class Parties {
 
     if (page.buildId) identity.clientVersion = `web-${page.buildId}`;
     if (page.signedOut) throw signedOut(response.url);
-    if (page.party == null) return null;
+    // The page says "no party" by leaving the field out, which a rename of
+    // it would look like too: the API settles it.
+    if (page.party == null) return this.#currentFromApi();
 
     const data = parseOrLog(partySchema, page.party, {
       logger,
