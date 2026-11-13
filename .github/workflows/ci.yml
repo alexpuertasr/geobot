@@ -29,6 +29,8 @@ jobs:
 
       - run: pnpm typecheck
 
+      - run: pnpm test:sdk
+
   deploy:
     if: github.event_name == 'push'
     needs: ci

@@ -6,9 +6,6 @@ import {
 } from "@playwright/test";
 import { Resource } from "sst";
 
-import { getPartyJoinLink } from "@/geoguessr/helpers/party";
-import type { Party } from "@/geoguessr/schemas/entities/party";
-
 const accounts = {
   "player-1": {
     name: "Player 1",
@@ -27,7 +24,7 @@ export type Player = {
 };
 
 export type PlayerFixture = {
-  join: (id: PlayerId, party: Party) => Promise<Player>;
+  join: (id: PlayerId, joinLink: string) => Promise<Player>;
 };
 
 export const test = base.extend<{ player: PlayerFixture }>({
@@ -35,7 +32,7 @@ export const test = base.extend<{ player: PlayerFixture }>({
     const contexts: BrowserContext[] = [];
 
     await use({
-      join: async (id, party) => {
+      join: async (id, joinLink) => {
         const account = accounts[id];
 
         const context = await browser.newContext();
@@ -55,7 +52,7 @@ export const test = base.extend<{ player: PlayerFixture }>({
 
         const playerPage = await context.newPage();
 
-        await playerPage.goto(getPartyJoinLink(party));
+        await playerPage.goto(joinLink);
 
         return {
           name: account.name,

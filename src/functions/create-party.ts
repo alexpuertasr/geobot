@@ -1,26 +1,39 @@
 import { WebClient } from "@slack/web-api";
 import type { Handler } from "aws-lambda";
 import { Resource } from "sst";
-import type z from "zod";
 
-import { createGeoClient } from "@/geoguessr/client";
-import { getPartyJoinLink, isPartyInUse } from "@/geoguessr/helpers/party";
-import type { createPartyRequest } from "@/geoguessr/schemas/create-party";
-import type { Member } from "@/geoguessr/schemas/entities/member";
-import type { Party } from "@/geoguessr/schemas/entities/party";
+import {
+  type CreatePartyOptions,
+  GeoGuessr,
+  type Party,
+  type PartyData,
+} from "@/geoguessr";
 import { logger } from "@/logger";
 
 const slack = new WebClient(Resource.SlackBotToken.value);
 
 export type CreatePartyEvent = {
   trigger?: "cron" | "slack" | "tests";
-  options?: z.input<typeof createPartyRequest>;
+  options?: CreatePartyOptions;
 };
 
-export type CreatePartyResult = {
-  party: Party | null;
-  members: Member[];
-};
+export type CreatePartyResult =
+  | {
+      party: PartyData;
+      joinLink: string;
+      /**
+       * The current party was in use (game running or players present), so
+       * a "tests" run kept it instead of disbanding it.
+       */
+      reused: boolean;
+    }
+  | { party: null };
+
+const result = (party: Party, reused: boolean): CreatePartyResult => ({
+  party: party.data,
+  joinLink: party.joinLink,
+  reused,
+});
 
 export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
   event,
@@ -30,52 +43,43 @@ export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
 
   logger.appendPersistentKeys({ trigger: event.trigger ?? "unknown" });
 
-  const geoClient = await createGeoClient({
-    cookies: Resource.GeoguessrCookies.value,
-  });
+  await using geoguessr = new GeoGuessr();
 
-  const currentParty = geoClient.currentParty();
+  let party: Party;
 
-  if (currentParty) {
-    const currentMembers = geoClient.currentMembers();
+  try {
+    const current = await geoguessr.parties.current();
 
-    if (
-      event.trigger === "tests" &&
-      isPartyInUse(currentParty, currentMembers)
-    ) {
-      logger.warn("🎮 The current party is in use, leaving it alone", {
-        partyId: currentParty.partyId,
-        gameState: currentParty.gameState,
-        members: currentMembers,
-      });
+    if (current) {
+      if (event.trigger === "tests" && current.isInUse) {
+        logger.warn("🎮 The current party is in use, leaving it alone", {
+          partyId: current.id,
+          gameState: current.gameState,
+          members: current.members,
+        });
 
-      return { party: currentParty, members: currentMembers };
+        return result(current, true);
+      }
+
+      await current.disband();
     }
 
-    await geoClient.disbandParty();
+    party = await geoguessr.parties.create(event.options);
+  } catch (error) {
+    logger.error("❌ Failed to create party", { error });
+    return { party: null };
   }
-
-  const party = await geoClient.createParty(event.options);
-  const members = geoClient.currentMembers();
-
-  if (!party) {
-    logger.error("❌ Failed to create party", { party });
-    return { party: null, members: [] };
-  }
-
-  const partyLink = getPartyJoinLink(party);
 
   if (event.trigger !== "tests") {
-    const result = await slack.chat.postMessage({
+    const text = `<!here> time to guess!\n:geoguessr: ${party.joinLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`;
+
+    const response = await slack.chat.postMessage({
       channel: Resource.SlackChannel.value,
-      text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
+      text,
       blocks: [
         {
           type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `<!here> time to guess!\n:geoguessr: ${partyLink}\n:google_meet: ${Resource.GoogleMeetsLink.value}`,
-          },
+          text: { type: "mrkdwn", text },
         },
         {
           type: "actions",
@@ -94,12 +98,12 @@ export const handler: Handler<CreatePartyEvent, CreatePartyResult> = async (
       ],
     });
 
-    if (result.ok) {
+    if (response.ok) {
       logger.info(`✅ Slack message sent successfully`);
     } else {
-      logger.error(`❌ Slack API error:`, { error: result.error });
+      logger.error(`❌ Slack API error:`, { error: response.error });
     }
   }
 
-  return { party, members };
+  return result(party, false);
 };
