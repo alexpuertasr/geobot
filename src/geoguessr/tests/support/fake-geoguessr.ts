@@ -277,8 +277,16 @@ export class FakeGeoGuessr implements AsyncDisposable {
     const envelope = {
       gameId: this.gameId,
       timestamp: new Date().toISOString(),
+      playerId: null,
+      payload: null,
+      lobby: null,
+      countryGuess: null,
+      coordinateGuess: null,
+      battleRoyaleGameState: null,
+      battleRoyalePlayer: null,
       duel: null,
       bullseye: null,
+      liveChallenge: null,
       ...frame,
     };
     this.#sentGameFrames.set(frame.code, envelope);
@@ -296,7 +304,11 @@ export class FakeGeoGuessr implements AsyncDisposable {
     }
   }
 
-  sendPartyFrame(code: string, payload: unknown) {
+  sendPartyFrame(
+    code: string,
+    payload: unknown,
+    envelope: Record<string, unknown> = {},
+  ) {
     const frame = {
       code,
       topic: `partyv2:${PARTY_ID}`,
@@ -304,6 +316,7 @@ export class FakeGeoGuessr implements AsyncDisposable {
       accessToken: null,
       client: "Unknown",
       timestamp: new Date().toISOString(),
+      ...envelope,
     };
     for (const socket of this.#partySubscribers) {
       socket.send(JSON.stringify(frame));

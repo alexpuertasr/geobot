@@ -1,6 +1,6 @@
 import { setTimeout as sleep } from "node:timers/promises";
 
-import * as z from "zod";
+import type * as z from "zod";
 
 import {
   APIError,
@@ -10,8 +10,11 @@ import {
 } from "../../errors";
 import type { BaseUrls, ResolvedOptions, SdkLogger } from "../../options";
 import type { Route } from "../../protocol/routes";
+import type { Shape } from "../../protocol/schemas/shape";
 import type { WebClientIdentity } from "../identity";
 import { parseJsonOr } from "../parse";
+import type { PayloadReader } from "../payload-reader";
+import type { Recorder } from "../recorder";
 
 export type HttpResponse = {
   status: number;
@@ -33,17 +36,31 @@ export const isTransient = (error: unknown) =>
 
 /**
  * Talks HTTP to GeoGuessr as its web client — same identity, a JSON content
- * type on every request — and logs every response, so CloudWatch shows
- * whatever GeoGuessr changes.
+ * type on every request — and logs and records every response, so whatever
+ * GeoGuessr changes shows in CloudWatch.
  */
 export class HttpClient {
   readonly #identity: WebClientIdentity;
+  readonly #reader: PayloadReader;
+  readonly #recorder: Recorder;
   readonly #timeout: number;
   readonly #logger: SdkLogger;
   readonly #baseUrls: BaseUrls;
 
-  constructor(identity: WebClientIdentity, options: ResolvedOptions) {
+  constructor({
+    identity,
+    reader,
+    recorder,
+    options,
+  }: {
+    identity: WebClientIdentity;
+    reader: PayloadReader;
+    recorder: Recorder;
+    options: ResolvedOptions;
+  }) {
     this.#identity = identity;
+    this.#reader = reader;
+    this.#recorder = recorder;
     this.#timeout = options.timeout;
     this.#logger = options.logger;
     this.#baseUrls = options.baseUrls;
@@ -74,26 +91,25 @@ export class HttpClient {
     }
   }
 
-  /** `request()`, then the body validated against `schema`. */
+  /** `request()`, then the body read as `shape`. */
   async json<Schema extends z.ZodType>(
-    schema: Schema,
+    shape: Shape<Schema>,
     route: Route,
     options?: { body?: unknown },
   ): Promise<z.output<Schema>> {
-    return this.parse(schema, await this.request(route, options));
+    return this.parse(shape, await this.request(route, options));
   }
 
+  /** The body read as `shape`; throws if the SDK can't use it. */
   parse<Schema extends z.ZodType>(
-    schema: Schema,
+    shape: Shape<Schema>,
     { url, body }: HttpResponse,
   ): z.output<Schema> {
-    const result = schema.safeParse(body);
-    if (result.success) return result.data;
+    const data = this.#reader.read(shape, body);
+    if (data !== null) return data;
 
-    const reason = z.prettifyError(result.error);
-    this.#logger.error("🌐 Unexpected response shape", { url, body, reason });
     throw new GeoGuessrError(
-      `Unexpected response from ${new URL(url).pathname}: ${reason}`,
+      `Unexpected ${shape.name} from ${new URL(url).pathname}`,
     );
   }
 
@@ -123,6 +139,12 @@ export class HttpClient {
         durationMs: Math.round(performance.now() - startedAt),
         ...(body === undefined ? {} : { requestBody: body }),
         body: truncateForLog(parsed),
+      });
+      this.#recorder.record({
+        source: "http",
+        kind: route.name,
+        status: response.status,
+        body: parsed,
       });
       return {
         status: response.status,

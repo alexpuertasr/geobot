@@ -1,14 +1,14 @@
-import type * as z from "zod";
-
-import { parseOrLog } from "../../core/parse";
-import type { SdkLogger } from "../../options";
+import type { PayloadReader } from "../../core/payload-reader";
 import type { NotificationFrame } from "../../protocol/schemas/frames";
 import {
+  gameStartedShape,
+  hostEditingSettingsShape,
   type MemberData,
-  memberListSchema,
   type PartyData,
-  partySchema,
+  partyShape,
 } from "../../protocol/schemas/party";
+
+import { readMembers } from "./members";
 
 export type PartyEvents = {
   /** Settings, state or attached game changed. */
@@ -23,22 +23,23 @@ export type PartyEvent = {
 
 /** What a party frame means, or `null` if it changes nothing we follow. */
 export const readPartyFrame = (
-  frame: NotificationFrame,
-  logger: SdkLogger,
+  { code, payload }: NotificationFrame,
+  reader: PayloadReader,
 ): PartyEvent | null => {
-  const read = <Schema extends z.ZodType>(schema: Schema) =>
-    parseOrLog(schema, frame.payload, {
-      logger,
-      message: `🛰️ [Party] Failed to parse ${frame.code}`,
-    });
-
-  switch (frame.code) {
+  switch (code) {
     case "PartyUpdated":
-      return updated(read(partySchema));
+      return updated(reader.read(partyShape, payload));
     case "PartyMemberListUpdated":
-      return membersUpdated(read(memberListSchema));
+      return membersUpdated(readMembers(reader, payload));
     case "PartyDisbanded":
+      reader.audit(partyShape, payload);
       return { type: "disbanded", payload: {} };
+    case "PartyGameStarted":
+      reader.audit(gameStartedShape, payload);
+      return null;
+    case "PartyHostEditingSettings":
+      reader.audit(hostEditingSettingsShape, payload);
+      return null;
     default:
       return null;
   }
@@ -48,9 +49,5 @@ const updated = (party: PartyData | null): PartyEvent | null =>
   party && { type: "updated", payload: { party } };
 
 /** Ignores empty lists, like the web client: the bot is always a member. */
-const membersUpdated = (
-  list: z.infer<typeof memberListSchema> | null,
-): PartyEvent | null =>
-  list?.members.length
-    ? { type: "membersUpdated", payload: { members: list.members } }
-    : null;
+const membersUpdated = (members: MemberData[] | null): PartyEvent | null =>
+  members?.length ? { type: "membersUpdated", payload: { members } } : null;

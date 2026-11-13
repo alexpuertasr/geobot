@@ -1,7 +1,6 @@
 import * as z from "zod";
 
 import type { ClientContext } from "../../core/context";
-import { parseOrLog } from "../../core/parse";
 import { AuthenticationError, GeoGuessrError } from "../../errors";
 import { routes } from "../../protocol/routes";
 import {
@@ -9,11 +8,12 @@ import {
   createPartyRequestSchema,
   type MemberData,
   type PartyData,
-  partySchema,
+  partyShape,
 } from "../../protocol/schemas/party";
 
+import { readMembers } from "./members";
 import { Party } from "./party";
-import { readMembers, readPartyPage } from "./party-page";
+import { readPartyPage } from "./party-page";
 
 /** `geoguessr.parties`: finding and creating the account's party. */
 export class Parties {
@@ -32,11 +32,11 @@ export class Parties {
    * @throws {AuthenticationError} the session is signed out.
    */
   async current(): Promise<Party | null> {
-    const { lifetime, http, identity, logger } = this.#context;
+    const { lifetime, http, identity, reader } = this.#context;
     lifetime.assertOpen();
 
     const response = await http.request(routes.partyPage());
-    const page = readPartyPage(response.body, logger);
+    const page = readPartyPage(response.body, this.#context);
     if (!page) return this.#currentFromApi();
 
     if (page.buildId) identity.clientVersion = `web-${page.buildId}`;
@@ -45,13 +45,10 @@ export class Parties {
     // it would look like too: the API settles it.
     if (page.party == null) return this.#currentFromApi();
 
-    const data = parseOrLog(partySchema, page.party, {
-      logger,
-      message: "📄 Could not read the party on the party page",
-    });
+    const data = reader.read(partyShape, page.party);
     if (!data) return this.#currentFromApi();
 
-    return this.#toParty(data, readMembers(page.memberList));
+    return this.#toParty(data, readMembers(reader, page.memberList));
   }
 
   /**
@@ -62,7 +59,7 @@ export class Parties {
     const { lifetime, http, logger } = this.#context;
     lifetime.assertOpen();
 
-    const data = await http.json(partySchema, routes.createParty(), {
+    const data = await http.json(partyShape, routes.createParty(), {
       body: validated(options),
     });
     logger.info("🎉 Party created", { partyId: data.partyId });
@@ -75,7 +72,7 @@ export class Parties {
     const response = await http.request(routes.activeParty());
     if (response.status === 204 || !response.body) return null;
 
-    return this.#toParty(http.parse(partySchema, response), null);
+    return this.#toParty(http.parse(partyShape, response), null);
   }
 
   #toParty(data: PartyData, members: MemberData[] | null) {

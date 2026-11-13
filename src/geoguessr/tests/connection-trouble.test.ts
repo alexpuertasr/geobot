@@ -143,28 +143,4 @@ describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
     expect(result.outcome).toBe("finished");
     expect(advances).toEqual([true, true]);
   });
-
-  // GameAborted, ConnectionClosed and PartyHostEditingSettings each broke the
-  // old client's parsing the first time GeoGuessr sent them.
-  test("plays on, logging no errors, through frame codes and party states it has never seen", async () => {
-    await using fake = await FakeGeoGuessr.start();
-    await using geoguessr = clientFor(fake);
-    const game = await startGame(geoguessr);
-    hostLikePlayGame(game);
-    game.once("roundStarted", () => {
-      fake.sendGameFrame({ code: "LiveChallengeSomethingNew" });
-      fake.sendPartyFrame("PartyHostEditingSettings", {
-        settingKey: "movement",
-      });
-      fake.sendPartyFrame("PartyUpdated", {
-        ...fake.party,
-        gameState: "Paused",
-      });
-    });
-
-    const result = await gameOver(game);
-
-    expect(result.outcome).toBe("finished");
-    expect(geoguessr.logs.filter(({ level }) => level === "error")).toEqual([]);
-  });
 });

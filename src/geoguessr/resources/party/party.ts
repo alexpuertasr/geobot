@@ -1,5 +1,6 @@
 import type { ClientContext } from "../../core/context";
 import { Emitter, type Listener, type Unsubscribe } from "../../core/emitter";
+import type { Recording } from "../../core/recorder";
 import { GeoGuessrError } from "../../errors";
 import { partyTopic } from "../../protocol/messages";
 import { GEOGUESSR_ORIGIN, routes } from "../../protocol/routes";
@@ -7,7 +8,7 @@ import type { NotificationFrame } from "../../protocol/schemas/frames";
 import {
   type MemberData,
   type PartyData,
-  partySchema,
+  partyShape,
 } from "../../protocol/schemas/party";
 import { estimateGameDuration } from "../live-challenge/game-duration";
 import { LiveChallenge } from "../live-challenge/live-challenge";
@@ -157,7 +158,7 @@ export class Party implements AsyncDisposable {
     this.#assertUsable();
 
     const data = await this.#context.http.json(
-      partySchema,
+      partyShape,
       routes.party(this.id),
     );
     this.#apply({ type: "updated", payload: { party: data } });
@@ -172,12 +173,21 @@ export class Party implements AsyncDisposable {
    * @throws {NotEnoughPlayersError} fewer than two players are present.
    */
   async startGame(): Promise<LiveChallenge> {
-    await this.connect();
+    const recording = this.#context.recorder.start();
+    try {
+      await this.connect();
 
-    const gameId = await requestGameStart(this, this.#context);
-    this.#context.logger.info("🎲 Game started", { partyId: this.id, gameId });
+      const gameId = await requestGameStart(this, this.#context);
+      this.#context.logger.info("🎲 Game started", {
+        partyId: this.id,
+        gameId,
+      });
 
-    return this.#enter(gameId);
+      return await this.#enter(gameId, recording);
+    } catch (error) {
+      recording.stop();
+      throw error;
+    }
   }
 
   /** "Disband party": everyone is sent home, and this handle is spent. */
@@ -228,10 +238,11 @@ export class Party implements AsyncDisposable {
     });
   }
 
-  async #enter(gameId: string): Promise<LiveChallenge> {
+  async #enter(gameId: string, recording: Recording): Promise<LiveChallenge> {
     const game = new LiveChallenge({
       id: gameId,
       party: this,
+      recording,
       context: this.#context,
     });
 
@@ -249,7 +260,7 @@ export class Party implements AsyncDisposable {
     const { partyId } = (frame.payload ?? {}) as { partyId?: unknown };
     if (partyId && partyId !== this.id) return;
 
-    const event = readPartyFrame(frame, this.#context.logger);
+    const event = readPartyFrame(frame, this.#context.reader);
     if (event) this.#apply(event);
   }
 

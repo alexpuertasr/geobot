@@ -3,12 +3,14 @@ import type { SdkLogger } from "../options";
 import { messages } from "../protocol/messages";
 import {
   type NotificationFrame,
-  notificationFrameSchema,
+  notificationFrameShape,
 } from "../protocol/schemas/frames";
 
 import type { Unsubscribe } from "./emitter";
 import type { WebClientIdentity } from "./identity";
-import { parseJsonOr, parseOrLog } from "./parse";
+import { parseJsonOr } from "./parse";
+import type { PayloadReader } from "./payload-reader";
+import type { Recorder } from "./recorder";
 import { ReconnectingSocket } from "./socket/reconnecting-socket";
 
 export type TopicSubscriber = {
@@ -26,16 +28,26 @@ export type TopicSubscriber = {
  */
 export class NotificationSocket {
   readonly #logger: SdkLogger;
+  readonly #reader: PayloadReader;
+  readonly #recorder: Recorder;
   readonly #socket: ReconnectingSocket;
   readonly #subscribers = new Map<string, TopicSubscriber>();
   #opens = 0;
 
-  constructor(options: {
+  constructor({
+    reader,
+    recorder,
+    ...options
+  }: {
     url: string;
     identity: WebClientIdentity;
+    reader: PayloadReader;
+    recorder: Recorder;
     logger: SdkLogger;
   }) {
     this.#logger = options.logger;
+    this.#reader = reader;
+    this.#recorder = recorder;
     this.#socket = new ReconnectingSocket({
       ...options,
       name: "notification",
@@ -96,16 +108,18 @@ export class NotificationSocket {
   }
 
   #dispatch(data: unknown) {
-    const frame = parseOrLog(notificationFrameSchema, data, {
-      logger: this.#logger,
-      message: "🛰️ [Notification] Failed to parse frame",
+    const frame = this.#reader.read(notificationFrameShape, data);
+    const payload = parsePayload(frame?.payload);
+    this.#recorder.record({
+      source: "party",
+      kind: frame?.code ?? "unreadable",
+      // As sent, not as read: reading drops whatever drifted.
+      body: frame ? { ...(data as object), payload } : data,
     });
     if (!frame) return;
 
     this.#logger.info(`🛰️ [Notification] ${frame.code}`, { data });
-
-    const subscriber = this.#subscribers.get(frame.topic ?? "");
-    subscriber?.onFrame({ ...frame, payload: parsePayload(frame.payload) });
+    this.#subscribers.get(frame.topic ?? "")?.onFrame({ ...frame, payload });
   }
 }
 

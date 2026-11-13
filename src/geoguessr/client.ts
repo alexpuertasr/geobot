@@ -3,6 +3,8 @@ import { HttpClient } from "./core/http/http-client";
 import { WebClientIdentity } from "./core/identity";
 import { Lifetime } from "./core/lifetime";
 import { NotificationSocket } from "./core/notification-socket";
+import { PayloadReader } from "./core/payload-reader";
+import { Recorder } from "./core/recorder";
 import {
   type GeoGuessrOptions,
   type ResolvedOptions,
@@ -48,15 +50,21 @@ export class GeoGuessr implements AsyncDisposable {
 const createContext = (options: ResolvedOptions): ClientContext => {
   const { logger, baseUrls } = options;
   const identity = new WebClientIdentity(options.cookies);
+  const reader = new PayloadReader(logger);
+  const recorder = new Recorder();
 
   return {
     identity,
-    http: new HttpClient(identity, options),
+    http: new HttpClient({ identity, reader, recorder, options }),
     notifications: new NotificationSocket({
       url: baseUrls.notificationSocket,
       identity,
+      reader,
+      recorder,
       logger,
     }),
+    reader,
+    recorder,
     lifetime: new Lifetime(logger),
     logger,
     baseUrls,

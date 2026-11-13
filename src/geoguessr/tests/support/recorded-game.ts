@@ -25,7 +25,8 @@ export const recordedGame = {
 export class RecordedGamePlayer {
   #frames: FrameEvent[];
   #advanceResponses: object[];
-  #lastState: unknown = null;
+  /** What the game-state endpoint answers: the state as of the last frame. */
+  #lastState: unknown;
   /** The host asked for the next round's countdown. */
   #hostAdvanced = false;
   /** Playback reached a countdown the host hasn't asked for yet. */
@@ -45,6 +46,10 @@ export class RecordedGamePlayer {
     this.#advanceResponses = events.flatMap((event) =>
       "advanceRoundResponse" in event ? [event.advanceRoundResponse] : [],
     );
+    // Before the first frame, the game as it started.
+    this.#lastState = this.#frames.find(
+      ({ frame }) => frame.liveChallenge?.state,
+    )?.frame.liveChallenge?.state;
   }
 
   state() {

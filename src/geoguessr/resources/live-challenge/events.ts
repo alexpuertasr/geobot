@@ -1,3 +1,4 @@
+import type { RecordedPayload } from "../../core/recorder";
 import type { GameFrame } from "../../protocol/schemas/frames";
 import type {
   LeaderboardEntry,
@@ -39,7 +40,7 @@ export type LiveChallengeEvents = {
  */
 export type AbortReason = "gameAborted" | "partyDisbanded";
 
-export type GameResult =
+export type GameResult = (
   | {
       outcome: "finished";
       /** The final game leaderboard, best first. */
@@ -52,4 +53,11 @@ export type GameResult =
       /** The leaderboard as it stood when the game was aborted. */
       standings: LeaderboardEntry[];
       state: LiveChallengeState | null;
-    };
+    }
+) & {
+  /**
+   * Everything GeoGuessr sent from the start request until the game ended,
+   * in order: HTTP responses, party frames and game frames, as they arrived.
+   */
+  recording: RecordedPayload[];
+};

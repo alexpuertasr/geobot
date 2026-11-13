@@ -1,18 +1,27 @@
 import { setTimeout as sleep } from "node:timers/promises";
 
-import { GeoGuessr, type LiveChallenge, type SdkLogger } from "../..";
+import {
+  type Drift,
+  GeoGuessr,
+  type LiveChallenge,
+  type SdkLogger,
+} from "../..";
 
 import type { FakeGeoGuessr } from "./fake-geoguessr";
 
-export type LogEntry = { level: string; message: string };
+export type LogEntry = {
+  level: string;
+  message: string;
+  context?: Record<string, unknown>;
+};
 
 /** A logger that remembers instead of printing. */
 export const recordingLogger = () => {
   const entries: LogEntry[] = [];
   const record =
     (level: string) =>
-    (message: string): void => {
-      entries.push({ level, message });
+    (message: string, context?: Record<string, unknown>): void => {
+      entries.push({ level, message, context });
     };
 
   const logger = {
@@ -39,6 +48,12 @@ export const clientFor = (
   });
   return Object.assign(geoguessr, { logs: entries });
 };
+
+/** What the client reported as drift from the payload shapes, in order. */
+export const driftReports = (geoguessr: ReturnType<typeof clientFor>) =>
+  geoguessr.logs
+    .filter(({ message }) => message === "🧬 GeoGuessr payload drifted")
+    .map(({ context }) => context as Drift & { payload: string });
 
 /** Starts the current party's game, as PlayGame does. */
 export const startGame = async (geoguessr: GeoGuessr) => {

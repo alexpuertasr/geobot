@@ -7,7 +7,7 @@ import {
   serverMessage,
 } from "../../errors";
 import { routes } from "../../protocol/routes";
-import { startGameResponseSchema } from "../../protocol/schemas/party";
+import { startGameResponseShape } from "../../protocol/schemas/party";
 
 import type { Party } from "./party";
 
@@ -31,8 +31,8 @@ export const requestGameStart = async (
     return gameIdFromParty(party, error);
   }
 
-  const started = startGameResponseSchema.safeParse(body);
-  if (started.success) return started.data.gameLobbyId;
+  const lobby = context.reader.read(startGameResponseShape, body);
+  if (lobby) return lobby.gameLobbyId;
 
   return gameIdFromParty(
     party,

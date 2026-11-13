@@ -1,5 +1,7 @@
 export { GeoGuessr } from "./client";
 export type { Unsubscribe } from "./core/emitter";
+export type { Drift } from "./core/payload-reader";
+export type { RecordedPayload } from "./core/recorder";
 export {
   APIError,
   AuthenticationError,

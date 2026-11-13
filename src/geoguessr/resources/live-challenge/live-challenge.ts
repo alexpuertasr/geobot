@@ -5,15 +5,15 @@ import type { ClientContext } from "../../core/context";
 import { deferred } from "../../core/deferred";
 import { Emitter, type Listener, type Unsubscribe } from "../../core/emitter";
 import { isTransient } from "../../core/http/http-client";
-import { parseOrLog } from "../../core/parse";
+import type { Recording } from "../../core/recorder";
 import { ConnectionError, GeoGuessrError } from "../../errors";
 import { routes } from "../../protocol/routes";
 import type { GameFrame } from "../../protocol/schemas/frames";
 import {
   type LeaderboardEntry,
   type LiveChallengeState,
-  leaderboardsSchema,
-  liveChallengeStateSchema,
+  leaderboardsShape,
+  liveChallengeStateShape,
 } from "../../protocol/schemas/live-challenge";
 import type { Party } from "../party/party";
 
@@ -59,6 +59,7 @@ export class LiveChallenge implements AsyncDisposable {
   readonly #watchdog: StallWatchdog;
   readonly #settler: StandingsSettler;
   readonly #result = deferred<GameResult>();
+  readonly #recording: Recording;
   readonly #stopWatchingParty: Unsubscribe;
   readonly #untrack: () => void;
 
@@ -73,14 +74,18 @@ export class LiveChallenge implements AsyncDisposable {
   constructor({
     id,
     party,
+    recording,
     context,
   }: {
     id: string;
     party: Party;
+    /** Started before the game was, so it holds the start too. */
+    recording: Recording;
     context: ClientContext;
   }) {
     this.id = id;
     this.party = party;
+    this.#recording = recording;
     this.#context = context;
 
     this.#events = new Emitter((error, event) =>
@@ -247,10 +252,7 @@ export class LiveChallenge implements AsyncDisposable {
   #acceptState(data: unknown): LiveChallengeState | null {
     if (!this.isLive) return null;
 
-    const state = parseOrLog(liveChallengeStateSchema, data, {
-      logger: this.#context.logger,
-      message: "🛰️ [Game] Failed to parse state",
-    });
+    const state = this.#context.reader.read(liveChallengeStateShape, data);
     if (!state || state.version < (this.#state?.version ?? 0)) return null;
 
     this.#state = state;
@@ -258,10 +260,7 @@ export class LiveChallenge implements AsyncDisposable {
   }
 
   #applyLeaderboards(data: unknown) {
-    const leaderboards = parseOrLog(leaderboardsSchema, data, {
-      logger: this.#context.logger,
-      message: "🛰️ [Game] Failed to parse leaderboards",
-    });
+    const leaderboards = this.#context.reader.read(leaderboardsShape, data);
     if (!leaderboards) return;
 
     const entries = leaderboards.game?.entries;
@@ -333,6 +332,7 @@ export class LiveChallenge implements AsyncDisposable {
       outcome: "finished",
       standings: [...this.#standings],
       state,
+      recording: this.#stopRecording(),
     });
   }
 
@@ -348,6 +348,7 @@ export class LiveChallenge implements AsyncDisposable {
       reason,
       standings: [...this.#standings],
       state: this.#state,
+      recording: this.#stopRecording(),
     });
     this.#closeInBackground();
   }
@@ -385,11 +386,17 @@ export class LiveChallenge implements AsyncDisposable {
   }
 
   async #release() {
+    this.#recording.stop();
     this.#settler.stop();
     this.#watchdog.stop();
     this.#stopWatchingParty();
     this.#untrack();
     await this.#connection.close();
+  }
+
+  #stopRecording() {
+    this.#recording.stop();
+    return [...this.#recording.payloads];
   }
 
   /** Nothing awaits a close once the game is over: it must never throw. */

@@ -1,11 +1,10 @@
 import type { ClientContext } from "../../core/context";
 import { deferred } from "../../core/deferred";
-import { parseOrLog } from "../../core/parse";
 import { ReconnectingSocket } from "../../core/socket/reconnecting-socket";
 import type { ConnectionError } from "../../errors";
 import { messages } from "../../protocol/messages";
 import { routes } from "../../protocol/routes";
-import { type GameFrame, gameFrameSchema } from "../../protocol/schemas/frames";
+import { type GameFrame, gameFrameShape } from "../../protocol/schemas/frames";
 
 /** How long `open()` waits for the server to confirm the bot's connection. */
 const CONFIRMATION_TIMEOUT_MS = 10_000;
@@ -107,17 +106,19 @@ export class GameConnection {
   }
 
   #onMessage(data: unknown) {
-    const { logger } = this.#options.context;
-    const frame = parseOrLog(gameFrameSchema, data, {
-      logger,
-      message: "🛰️ [Game] Failed to parse frame",
-    });
-    if (!frame) return;
-
-    if (frame.gameId && frame.gameId !== this.#gameId) {
+    const { reader, recorder, logger } = this.#options.context;
+    const frame = reader.read(gameFrameShape, data);
+    if (frame?.gameId && frame.gameId !== this.#gameId) {
       logger.warn("🛰️ [Game] Frame for another game, ignored", { data });
       return;
     }
+
+    recorder.record({
+      source: "game",
+      kind: frame?.code ?? "unreadable",
+      body: data,
+    });
+    if (!frame) return;
 
     logger.info(`🛰️ [Game] ${frame.code}`, { data });
     if (this.#confirmsHost(frame)) this.#onHostConfirmed();
