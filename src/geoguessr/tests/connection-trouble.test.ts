@@ -1,0 +1,173 @@
+import { describe, expect, test, vi } from "vitest";
+
+import { PACE } from "./support/fake-game";
+import { FakeGeoGuessr } from "./support/fake-geoguessr";
+import {
+  clientFor,
+  gameOver,
+  hostLikePlayGame,
+  startGame,
+} from "./support/helpers";
+import { ConnectionLostError } from "..";
+
+describe.concurrent("when the connection to GeoGuessr misbehaves", () => {
+  // Nov 10: the game socket closed with 1006 mid-round and the game was lost.
+  test("re-reads the game as soon as the game socket is back, recovering a round that ended meanwhile", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    const { happened } = hostLikePlayGame(game);
+    game.once("roundStarted", () => {
+      setTimeout(
+        () => fake.dropSocket("game", { refuseFor: PACE.roundLength }),
+        PACE.roundLength / 2,
+      );
+    });
+
+    // Well before the stall watchdog would step in (5s past the round's end).
+    await vi.waitFor(() => expect(happened).toContain("ended 1"), {
+      timeout: 4_000,
+    });
+    expect(fake.undelivered).toContain("LiveChallengeRoundEnded");
+    expect((await gameOver(game)).outcome).toBe("finished");
+  });
+
+  test("notices an abort that happened while both sockets were down", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    game.once("roundStarted", () => {
+      fake.dropSocket("notification", { refuseFor: 500 });
+      fake.dropSocket("game", { refuseFor: 500 });
+      setTimeout(() => fake.abortFromBrowser(), 100);
+    });
+
+    const result = await gameOver(game);
+
+    expect(result).toMatchObject({ outcome: "aborted", reason: "gameAborted" });
+  });
+
+  test("fails the game at once when another session takes over the game socket", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+
+    fake.handGameSocketToAnotherSession();
+
+    await expect(gameOver(game, { within: 3_000 })).rejects.toThrow(
+      ConnectionLostError,
+    );
+  });
+
+  // Oct 15: a 1012 closed the party socket, it never came back, and an
+  // abort went unnoticed for minutes.
+  test("re-joins the party after GeoGuessr restarts its notification server", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const party = await geoguessr.parties.current();
+    await party?.connect();
+
+    fake.restartNotificationServer();
+
+    await vi.waitFor(() => {
+      const subscribes = fake.received.filter(
+        ({ message }) => message.code === "Subscribe",
+      );
+      expect(subscribes).toHaveLength(2);
+    });
+    expect(fake.connections.at(-1)?.params.get("reconnect")).toBe("true");
+  });
+
+  test("keeps backing off while GeoGuessr drops every connection right after accepting it", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const party = await geoguessr.parties.current();
+    const healthy = new Promise((resolve) =>
+      party?.once("membersUpdated", resolve),
+    );
+    await party?.connect();
+    await healthy;
+
+    fake.dropEveryConnection("notification");
+
+    await vi.waitFor(
+      () => {
+        const reconnects = fake.connections.slice(1, 5);
+        expect(reconnects.map(({ params }) => params.get("attempt"))).toEqual([
+          "1",
+          "2",
+          "3",
+          "4",
+        ]);
+      },
+      { timeout: 5_000 },
+    );
+  });
+
+  test("reads the game state when a round runs late and no frame said it ended", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    const { happened } = hostLikePlayGame(game);
+    fake.loseNextGameFrame("LiveChallengeRoundEnded");
+
+    const result = await gameOver(game);
+
+    expect(happened).toContain("ended 1");
+    expect(result.outcome).toBe("finished");
+  });
+
+  // Leaked sockets replayed frames on the next Lambda thaw.
+  test("announces each round once, even when a frame arrives twice", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    const { happened } = hostLikePlayGame(game, { pauseMs: 300 });
+    game.once("roundEnded", () =>
+      fake.resendGameFrame("LiveChallengeRoundEnded"),
+    );
+
+    await gameOver(game);
+
+    expect(happened.filter((event) => event === "ended 1")).toHaveLength(1);
+  });
+
+  test("ignores a replayed frame older than the state it already has", async () => {
+    await using fake = await FakeGeoGuessr.start({ rounds: 3 });
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    const { advances } = hostLikePlayGame(game);
+    game.on("roundEnded", ({ round }) => {
+      if (round === 2) fake.resendGameFrame("LiveChallengeRoundStarted");
+    });
+
+    const result = await gameOver(game);
+
+    expect(result.outcome).toBe("finished");
+    expect(advances).toEqual([true, true]);
+  });
+
+  // GameAborted, ConnectionClosed and PartyHostEditingSettings each broke the
+  // old client's parsing the first time GeoGuessr sent them.
+  test("plays on, logging no errors, through frame codes and party states it has never seen", async () => {
+    await using fake = await FakeGeoGuessr.start();
+    await using geoguessr = clientFor(fake);
+    const game = await startGame(geoguessr);
+    hostLikePlayGame(game);
+    game.once("roundStarted", () => {
+      fake.sendGameFrame({ code: "LiveChallengeSomethingNew" });
+      fake.sendPartyFrame("PartyHostEditingSettings", {
+        settingKey: "movement",
+      });
+      fake.sendPartyFrame("PartyUpdated", {
+        ...fake.party,
+        gameState: "Paused",
+      });
+    });
+
+    const result = await gameOver(game);
+
+    expect(result.outcome).toBe("finished");
+    expect(geoguessr.logs.filter(({ level }) => level === "error")).toEqual([]);
+  });
+});

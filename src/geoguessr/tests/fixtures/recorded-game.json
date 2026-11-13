@@ -1,0 +1,1765 @@
+{
+  "source": "PlayGame 6becfcc6, 2026-11-10, a 2-round E2E game",
+  "partyPage": {
+    "initialParty": {
+      "partyId": "507b2322-f328-4c1c-8965-cce89d744e4b",
+      "owner": {
+        "nick": "Geobot",
+        "flair": 0,
+        "pin": "pin/placeholder.png",
+        "fullBodyPin": "pin/placeholder.png",
+        "userId": "000000000000000000000001",
+        "team": null,
+        "isGuest": false,
+        "isPresent": true,
+        "isPlaying": false,
+        "isBenched": false,
+        "isEligibleAsOwner": true,
+        "victories": 0,
+        "clientType": "Unknown",
+        "club": null
+      },
+      "lobbyId": null,
+      "gameState": "NoGame",
+      "gameType": "LiveChallenge",
+      "chatAccessToken": "redacted",
+      "bannedPlayerIds": [],
+      "mutedPlayerIds": [],
+      "expiresAt": 1794313912000,
+      "partySettings": {
+        "allowedCommunication": "TextMessages",
+        "isolateInGameChat": false,
+        "allowGuests": true,
+        "allowSwitchingTeams": true,
+        "maxPartySize": 100,
+        "masterControl": false,
+        "masterControlAutoStartRounds": false
+      },
+      "gameSettings": {
+        "forbidMoving": false,
+        "forbidZooming": false,
+        "forbidRotating": false,
+        "guessMapType": "roadmap",
+        "roundTime": 10,
+        "mapSlug": "world",
+        "roundCount": 2
+      },
+      "joinCode": {
+        "code": "FZ3OA",
+        "resourceType": "PartiesV2",
+        "resourceId": "507b2322-f328-4c1c-8965-cce89d744e4b",
+        "expires": "2026-11-13T00:31:52.0000000Z"
+      },
+      "isCommunity": false,
+      "communitySettings": {
+        "language": "en",
+        "gameModes": ["LiveChallenge"],
+        "vibe": "Chill"
+      },
+      "isHostLess": false
+    },
+    "initialMemberInfo": {
+      "members": [
+        {
+          "nick": "Geobot",
+          "flair": 0,
+          "pin": "pin/placeholder.png",
+          "fullBodyPin": "pin/placeholder.png",
+          "userId": "000000000000000000000001",
+          "team": "blue",
+          "isGuest": false,
+          "isPresent": true,
+          "isPlaying": false,
+          "isBenched": false,
+          "isEligibleAsOwner": true,
+          "victories": 0,
+          "clientType": "Web",
+          "club": null
+        },
+        {
+          "nick": "Player 1",
+          "flair": 0,
+          "pin": "pin/placeholder.png",
+          "fullBodyPin": "pin/placeholder.png",
+          "userId": "000000000000000000000002",
+          "team": "red",
+          "isGuest": false,
+          "isPresent": true,
+          "isPlaying": false,
+          "isBenched": false,
+          "isEligibleAsOwner": false,
+          "victories": 0,
+          "clientType": "Web",
+          "club": null
+        }
+      ],
+      "totalCount": 2
+    }
+  },
+  "startResponse": {
+    "gameLobbyId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+    "title": "",
+    "type": "Unrated",
+    "gameType": "LiveChallenge",
+    "status": "Closed",
+    "numPlayersJoined": 2,
+    "totalSpots": 1500,
+    "numOpenSpots": 1498,
+    "minPlayersRequired": 2,
+    "playerIds": ["000000000000000000000001", "000000000000000000000002"],
+    "players": [
+      {
+        "playerId": "000000000000000000000001",
+        "nick": "Geobot",
+        "countryCode": "au",
+        "isVerified": false,
+        "flair": 0,
+        "avatarPath": "pin/placeholder.png",
+        "level": 32,
+        "titleTierId": 40,
+        "division": "Bronze",
+        "performanceStreak": "None",
+        "rank": {
+          "rank": null,
+          "division": {
+            "id": 0,
+            "divisionId": 0,
+            "tierId": 0
+          }
+        },
+        "team": "blue",
+        "competitive": {
+          "rating": 0,
+          "division": {
+            "type": 10,
+            "startRating": 0,
+            "endRating": 450
+          }
+        },
+        "avatar": {
+          "fullBodyPath": "pin/8d07570bcd3675a19d169b901eb250de.png"
+        },
+        "isGuest": false,
+        "club": null,
+        "borderUrl": "avatarasseticon/78c04b52c44c7521637746c87f208c7a.webp"
+      },
+      {
+        "playerId": "000000000000000000000002",
+        "nick": "Player 1",
+        "countryCode": "au",
+        "isVerified": false,
+        "flair": 0,
+        "avatarPath": "pin/placeholder.png",
+        "level": 1,
+        "titleTierId": 10,
+        "division": "Bronze",
+        "performanceStreak": "None",
+        "rank": {
+          "rank": null,
+          "division": {
+            "id": 0,
+            "divisionId": 0,
+            "tierId": 0
+          }
+        },
+        "team": "red",
+        "competitive": {
+          "rating": 0,
+          "division": {
+            "type": 10,
+            "startRating": 0,
+            "endRating": 450
+          }
+        },
+        "avatar": {
+          "fullBodyPath": "pin/af47e91d1eda11c705f7ec748be3fd7d.png"
+        },
+        "isGuest": false,
+        "club": null,
+        "borderUrl": null
+      }
+    ],
+    "visibility": "Private",
+    "closingTime": "2026-11-10T00:32:03.2477384Z",
+    "timestamp": "2026-11-10T00:32:03.3195005+00:00",
+    "owner": "000000000000000000000001",
+    "host": {
+      "playerId": "000000000000000000000001",
+      "nick": "Geobot",
+      "countryCode": "au",
+      "isVerified": false,
+      "flair": 0,
+      "avatarPath": "pin/placeholder.png",
+      "level": 32,
+      "titleTierId": 40,
+      "division": "Bronze",
+      "performanceStreak": "None",
+      "rank": {
+        "rank": null,
+        "division": {
+          "id": 0,
+          "divisionId": 0,
+          "tierId": 0
+        }
+      },
+      "team": "blue",
+      "competitive": {
+        "rating": 0,
+        "division": {
+          "type": 10,
+          "startRating": 0,
+          "endRating": 450
+        }
+      },
+      "avatar": {
+        "fullBodyPath": "pin/8d07570bcd3675a19d169b901eb250de.png"
+      },
+      "isGuest": false,
+      "club": null,
+      "borderUrl": "avatarasseticon/78c04b52c44c7521637746c87f208c7a.webp"
+    },
+    "isAutoStarted": false,
+    "canBeStartedManually": false,
+    "isRated": false,
+    "competitionId": "",
+    "partyId": "507b2322-f328-4c1c-8965-cce89d744e4b",
+    "gameOptions": {
+      "forbidMoving": false,
+      "forbidZooming": false,
+      "forbidRotating": false,
+      "mapSlug": "world",
+      "roundTime": 10,
+      "roundCount": 2,
+      "guessMapType": "roadmap"
+    },
+    "createdAt": "2026-11-10T00:32:03.2477384Z",
+    "shareLink": "https://www.geoguessr.com/live-challenge/0e290c86-c7c7-41db-972b-f7e9475686be",
+    "teams": [],
+    "groupEventId": "",
+    "quizId": "",
+    "hostParticipates": true,
+    "isSinglePlayer": false,
+    "tripId": "",
+    "blueprintId": null,
+    "tournament": null,
+    "allowedCommunication": "TextMessages",
+    "accessToken": null,
+    "mapName": "World",
+    "gameContext": "party_v2",
+    "competitiveGameMode": "None"
+  },
+  "events": [
+    {
+      "at": 1.84,
+      "socket": "party",
+      "frame": {
+        "code": "PartyGameStarted",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"gameType\":\"LiveChallenge\",\"players\":[\"000000000000000000000001\",\"000000000000000000000002\"],\"nodeId\":\"\",\"gameId\":\"0e290c86-c7c7-41db-972b-f7e9475686be\",\"lobbyId\":\"0e290c86-c7c7-41db-972b-f7e9475686be\"}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:03.3001157Z"
+      }
+    },
+    {
+      "at": 1.85,
+      "socket": "party",
+      "frame": {
+        "code": "PartyUpdated",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"owner\":{\"nick\":\"Geobot\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000001\",\"team\":null,\"isGuest\":false,\"isPresent\":true,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":false,\"isEligibleAsOwner\":true,\"victories\":0,\"clientType\":\"Unknown\",\"club\":null},\"lobbyId\":\"0e290c86-c7c7-41db-972b-f7e9475686be\",\"gameState\":\"Ongoing\",\"gameType\":\"LiveChallenge\",\"chatAccessToken\":\"redacted\",\"bannedPlayerIds\":null,\"mutedPlayerIds\":[],\"expiresAt\":\"2026-11-10T12:32:03Z\",\"timestamp\":\"2026-11-10T00:32:03.3115926Z\",\"partySettings\":{\"allowedCommunication\":\"TextMessages\",\"isolateInGameChat\":false,\"allowGuests\":true,\"allowSwitchingTeams\":true,\"maxPartySize\":100,\"masterControl\":false,\"masterControlAutoStartRounds\":false,\"hideJoinInfo\":false},\"maxAllowedPartySize\":100,\"gameSettings\":{\"forbidMoving\":false,\"forbidZooming\":false,\"forbidRotating\":false,\"guessMapType\":\"roadmap\",\"roundTime\":10,\"mapSlug\":\"world\",\"roundCount\":2,\"initialHealth\":6000,\"individualInitialHealth\":false,\"initialHealthTeamOne\":0,\"initialHealthTeamTwo\":0,\"timeAfterGuess\":15,\"multiplierIncrement\":0,\"disableHealing\":true,\"countAllGuesses\":false,\"maxRoundTime\":0,\"maxNumberOfRounds\":30,\"roundsWithoutDamageMultiplier\":1,\"roundWinMultiplierIncrement\":5,\"blinkMode\":false,\"blinkTimeTeamOne\":1000,\"blinkTimeTeamTwo\":1000,\"pointRushMaxRoundTime\":0,\"pointRushTimeAfterGuess\":15,\"pointRushHasFinal\":true,\"pointRushPointsToWin\":18000},\"joinCode\":{\"code\":\"FZ3OA\",\"resourceType\":\"PartiesV2\",\"resourceId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"expires\":\"2026-11-13T00:31:52Z\"},\"isCommunity\":false,\"communitySettings\":{\"language\":\"en\",\"gameModes\":[\"LiveChallenge\"],\"vibe\":\"Chill\"},\"isHostLess\":false}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:03.3115949Z"
+      }
+    },
+    {
+      "at": 2.9,
+      "socket": "party",
+      "frame": {
+        "code": "PartyMemberListUpdated",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"members\":[{\"nick\":\"Geobot\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000001\",\"team\":\"blue\",\"isGuest\":false,\"isPresent\":true,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":true,\"isEligibleAsOwner\":true,\"victories\":0,\"clientType\":\"Web\",\"club\":null},{\"nick\":\"Player 1\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000002\",\"team\":\"red\",\"isGuest\":false,\"isPresent\":true,\"isPlaying\":true,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":true,\"isEligibleAsOwner\":false,\"victories\":0,\"clientType\":\"Web\",\"club\":null}],\"totalCount\":2}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:04.366076Z"
+      }
+    },
+    {
+      "at": 3.48,
+      "socket": "game",
+      "frame": {
+        "code": "ConnectionOpened",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": "000000000000000000000001",
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:04.9465621Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": null
+      }
+    },
+    {
+      "at": 7.04,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeStarted",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:08.5091439Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Ongoing",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 1,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:18.267+00:00",
+                "state": "Ongoing",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 1,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 1,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 17.27,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeRoundEnded",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:18.7376624Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Ongoing",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 1,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:18.7368315+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 1,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 2,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 18.83,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeLeaderboardUpdate",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:20.2987514Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": null,
+          "leaderboards": {
+            "roundGuessTime": {
+              "roundNumber": 1,
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 10755,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            },
+            "round": {
+              "roundNumber": 1,
+              "totalGuessesOnRound": 1,
+              "guesses": [
+                {
+                  "roundNumber": 1,
+                  "lat": 1.9348395566038439,
+                  "lng": -21.95303277978518,
+                  "distance": 5993844.1625629505,
+                  "time": 10,
+                  "score": 90,
+                  "wasCorrect": false
+                }
+              ],
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 90,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            },
+            "game": {
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 90,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            }
+          },
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 19.61,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeRoundStarting",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:21.0820711Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Ongoing",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 2,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:21.0809415+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              },
+              {
+                "id": "14af0b35-f732-4683-a559-c7984d17ee63",
+                "quizBankEntryId": null,
+                "roundNumber": 2,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:26.0809414+00:00",
+                "endTime": "2026-11-10T00:32:36.0809414+00:00",
+                "state": "Starting",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "41776E655A4E6A5A5150344473516C4E314B42733141",
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156,
+                      "countryCode": "th",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 2,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 4,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 19.63,
+      "socket": "http",
+      "advanceRoundResponse": {
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "status": "Ongoing",
+        "options": {
+          "movementOptions": {
+            "forbidMoving": false,
+            "forbidZooming": false,
+            "forbidRotating": false
+          },
+          "roundCount": 2,
+          "mapSlug": "world",
+          "roundTime": 10,
+          "guessMapType": "roadmap",
+          "isSinglePlayer": false,
+          "scoringType": "Unknown",
+          "context": ""
+        },
+        "playerIds": ["000000000000000000000001", "000000000000000000000002"],
+        "currentRoundNumber": 2,
+        "rounds": [
+          {
+            "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+            "quizBankEntryId": null,
+            "roundNumber": 1,
+            "panorama": null,
+            "startTime": "2026-11-10T00:32:08.267+00:00",
+            "endTime": "2026-11-10T00:32:21.0809415+00:00",
+            "state": "Ended",
+            "roundTime": 10,
+            "maxRoundScore": 5000,
+            "question": {
+              "type": "Panorama",
+              "panoramaQuestionPayload": {
+                "panorama": {
+                  "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                  "lat": 51.395198822021484,
+                  "lng": 3.5653905868530273,
+                  "countryCode": "nl",
+                  "heading": 0,
+                  "pitch": 0,
+                  "zoom": 0
+                },
+                "movementOptions": {
+                  "forbidMoving": false,
+                  "forbidZooming": false,
+                  "forbidRotating": false
+                },
+                "mapBounds": {
+                  "min": {
+                    "lat": -54.853378,
+                    "lng": -159.778792
+                  },
+                  "max": {
+                    "lat": 78.655743,
+                    "lng": 178.4508514404297
+                  }
+                },
+                "mapName": "World",
+                "mapSlug": "world",
+                "context": "",
+                "guessMapType": "roadmap"
+              },
+              "quizQuestionPayload": null,
+              "staticContentPayload": null,
+              "customPanoramaQuestionPayload": null,
+              "fullScreenImageQuestionPayload": null
+            },
+            "answer": {
+              "type": "Coordinate",
+              "coordinateAnswerPayload": {
+                "coordinate": {
+                  "lat": 51.395198822021484,
+                  "lng": 3.5653905868530273
+                }
+              },
+              "countryAnswerPayload": null,
+              "singleChoicePayload": null,
+              "singleChoiceCoordinatePayload": null,
+              "orderingAnswerPayload": null,
+              "rangeAnswerPayload": null,
+              "multipleAnswerAnswerPayload": null
+            },
+            "hints": null
+          },
+          {
+            "id": "14af0b35-f732-4683-a559-c7984d17ee63",
+            "quizBankEntryId": null,
+            "roundNumber": 2,
+            "panorama": null,
+            "startTime": "2026-11-10T00:32:26.0809414+00:00",
+            "endTime": "2026-11-10T00:32:36.0809414+00:00",
+            "state": "Starting",
+            "roundTime": 10,
+            "maxRoundScore": 5000,
+            "question": {
+              "type": "Panorama",
+              "panoramaQuestionPayload": {
+                "panorama": {
+                  "panoId": "41776E655A4E6A5A5150344473516C4E314B42733141",
+                  "lat": 16.293874740600586,
+                  "lng": 103.99818420410156,
+                  "countryCode": "th",
+                  "heading": 0,
+                  "pitch": 0,
+                  "zoom": 0
+                },
+                "movementOptions": {
+                  "forbidMoving": false,
+                  "forbidZooming": false,
+                  "forbidRotating": false
+                },
+                "mapBounds": {
+                  "min": {
+                    "lat": -54.853378,
+                    "lng": -159.778792
+                  },
+                  "max": {
+                    "lat": 78.655743,
+                    "lng": 178.4508514404297
+                  }
+                },
+                "mapName": "World",
+                "mapSlug": "world",
+                "context": "",
+                "guessMapType": "roadmap"
+              },
+              "quizQuestionPayload": null,
+              "staticContentPayload": null,
+              "customPanoramaQuestionPayload": null,
+              "fullScreenImageQuestionPayload": null
+            },
+            "answer": {
+              "type": "Coordinate",
+              "coordinateAnswerPayload": {
+                "coordinate": {
+                  "lat": 16.293874740600586,
+                  "lng": 103.99818420410156
+                }
+              },
+              "countryAnswerPayload": null,
+              "singleChoicePayload": null,
+              "singleChoiceCoordinatePayload": null,
+              "orderingAnswerPayload": null,
+              "rangeAnswerPayload": null,
+              "multipleAnswerAnswerPayload": null
+            },
+            "hints": null
+          }
+        ],
+        "roundCount": 2,
+        "currentStepNumber": 2,
+        "totalSteps": 2,
+        "guesses": null,
+        "claimedHints": null,
+        "totalScore": null,
+        "leaderboards": null,
+        "playerPositions": null,
+        "mapName": "",
+        "mapBounds": {
+          "min": {
+            "lat": 90,
+            "lng": 180
+          },
+          "max": {
+            "lat": -90,
+            "lng": -180
+          }
+        },
+        "hostId": "000000000000000000000001",
+        "aggregatedAnswerStats": null,
+        "version": 4,
+        "playerCount": 2
+      }
+    },
+    {
+      "at": 24.96,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeRoundStarted",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:26.4276009Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Ongoing",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 2,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:21.08+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              },
+              {
+                "id": "14af0b35-f732-4683-a559-c7984d17ee63",
+                "quizBankEntryId": null,
+                "roundNumber": 2,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:26.08+00:00",
+                "endTime": "2026-11-10T00:32:36.08+00:00",
+                "state": "Ongoing",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "41776E655A4E6A5A5150344473516C4E314B42733141",
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156,
+                      "countryCode": "th",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 2,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 5,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 34.84,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeRoundEnded",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:36.3146511Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Ongoing",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 2,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:21.08+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              },
+              {
+                "id": "14af0b35-f732-4683-a559-c7984d17ee63",
+                "quizBankEntryId": null,
+                "roundNumber": 2,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:26.08+00:00",
+                "endTime": "2026-11-10T00:32:36.3139289+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "41776E655A4E6A5A5150344473516C4E314B42733141",
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156,
+                      "countryCode": "th",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 2,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 6,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 34.85,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeFinished",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:36.3195679Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": {
+            "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+            "status": "Finished",
+            "options": {
+              "movementOptions": {
+                "forbidMoving": false,
+                "forbidZooming": false,
+                "forbidRotating": false
+              },
+              "roundCount": 2,
+              "mapSlug": "world",
+              "roundTime": 10,
+              "guessMapType": "roadmap",
+              "isSinglePlayer": false,
+              "scoringType": "Unknown",
+              "context": ""
+            },
+            "playerIds": [
+              "000000000000000000000001",
+              "000000000000000000000002"
+            ],
+            "currentRoundNumber": 2,
+            "rounds": [
+              {
+                "id": "88fb70a7-fb9e-4ab5-9708-32ac6f2c9447",
+                "quizBankEntryId": null,
+                "roundNumber": 1,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:08.267+00:00",
+                "endTime": "2026-11-10T00:32:21.08+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "45614F395F4E3373634A6739717273766E4E524D5641",
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273,
+                      "countryCode": "nl",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 51.395198822021484,
+                      "lng": 3.5653905868530273
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              },
+              {
+                "id": "14af0b35-f732-4683-a559-c7984d17ee63",
+                "quizBankEntryId": null,
+                "roundNumber": 2,
+                "panorama": null,
+                "startTime": "2026-11-10T00:32:26.08+00:00",
+                "endTime": "2026-11-10T00:32:36.3139289+00:00",
+                "state": "Ended",
+                "roundTime": 10,
+                "maxRoundScore": 5000,
+                "question": {
+                  "type": "Panorama",
+                  "panoramaQuestionPayload": {
+                    "panorama": {
+                      "panoId": "41776E655A4E6A5A5150344473516C4E314B42733141",
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156,
+                      "countryCode": "th",
+                      "heading": 0,
+                      "pitch": 0,
+                      "zoom": 0
+                    },
+                    "movementOptions": {
+                      "forbidMoving": false,
+                      "forbidZooming": false,
+                      "forbidRotating": false
+                    },
+                    "mapBounds": {
+                      "min": {
+                        "lat": -54.853378,
+                        "lng": -159.778792
+                      },
+                      "max": {
+                        "lat": 78.655743,
+                        "lng": 178.4508514404297
+                      }
+                    },
+                    "mapName": "World",
+                    "mapSlug": "world",
+                    "context": "",
+                    "guessMapType": "roadmap"
+                  },
+                  "quizQuestionPayload": null,
+                  "staticContentPayload": null,
+                  "customPanoramaQuestionPayload": null,
+                  "fullScreenImageQuestionPayload": null
+                },
+                "answer": {
+                  "type": "Coordinate",
+                  "coordinateAnswerPayload": {
+                    "coordinate": {
+                      "lat": 16.293874740600586,
+                      "lng": 103.99818420410156
+                    }
+                  },
+                  "countryAnswerPayload": null,
+                  "singleChoicePayload": null,
+                  "singleChoiceCoordinatePayload": null,
+                  "orderingAnswerPayload": null,
+                  "rangeAnswerPayload": null,
+                  "multipleAnswerAnswerPayload": null
+                },
+                "hints": null
+              }
+            ],
+            "roundCount": 2,
+            "currentStepNumber": 2,
+            "totalSteps": 2,
+            "guesses": null,
+            "claimedHints": null,
+            "totalScore": null,
+            "leaderboards": null,
+            "playerPositions": null,
+            "mapName": "",
+            "mapBounds": {
+              "min": {
+                "lat": 90,
+                "lng": 180
+              },
+              "max": {
+                "lat": -90,
+                "lng": -180
+              }
+            },
+            "hostId": "000000000000000000000001",
+            "aggregatedAnswerStats": null,
+            "version": 7,
+            "playerCount": 2
+          },
+          "leaderboards": null,
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": "2026-11-10T00:32:39.3139289+00:00"
+        }
+      }
+    },
+    {
+      "at": 36.19,
+      "socket": "party",
+      "frame": {
+        "code": "PartyMemberListUpdated",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"members\":[{\"nick\":\"Geobot\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000001\",\"team\":\"blue\",\"isGuest\":false,\"isPresent\":true,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":true,\"isEligibleAsOwner\":true,\"victories\":0,\"clientType\":\"Web\",\"club\":null},{\"nick\":\"Player 1\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000002\",\"team\":\"red\",\"isGuest\":false,\"isPresent\":false,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":true,\"isEligibleAsOwner\":false,\"victories\":0,\"clientType\":\"Web\",\"club\":null}],\"totalCount\":2}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:37.6546284Z"
+      }
+    },
+    {
+      "at": 36.38,
+      "socket": "game",
+      "frame": {
+        "code": "LiveChallengeLeaderboardUpdate",
+        "gameId": "0e290c86-c7c7-41db-972b-f7e9475686be",
+        "playerId": null,
+        "payload": null,
+        "timestamp": "2026-11-10T00:32:37.8539549Z",
+        "lobby": null,
+        "countryGuess": null,
+        "coordinateGuess": null,
+        "battleRoyaleGameState": null,
+        "battleRoyalePlayer": null,
+        "duel": null,
+        "bullseye": null,
+        "liveChallenge": {
+          "state": null,
+          "leaderboards": {
+            "roundGuessTime": {
+              "roundNumber": 2,
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 10520,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            },
+            "round": {
+              "roundNumber": 2,
+              "totalGuessesOnRound": 1,
+              "guesses": [
+                {
+                  "roundNumber": 2,
+                  "lat": 9.62400508564685,
+                  "lng": 25.859467220214817,
+                  "distance": 8454136.176021852,
+                  "time": 10,
+                  "score": 17,
+                  "wasCorrect": false
+                }
+              ],
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 17,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            },
+            "game": {
+              "entries": [
+                {
+                  "position": 1,
+                  "id": "000000000000000000000002",
+                  "name": "Player 1",
+                  "avatarPath": "pin/placeholder.png",
+                  "score": 107,
+                  "isVerified": false,
+                  "flair": 0,
+                  "isGuest": false
+                }
+              ]
+            }
+          },
+          "aggregatedAnswerStats": null,
+          "guess": null,
+          "playerId": null,
+          "gameBreakdownAvailableAfter": null
+        }
+      }
+    },
+    {
+      "at": 38.18,
+      "socket": "party",
+      "frame": {
+        "code": "PartyUpdated",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"owner\":{\"nick\":\"Geobot\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000001\",\"team\":null,\"isGuest\":false,\"isPresent\":true,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":false,\"isEligibleAsOwner\":true,\"victories\":0,\"clientType\":\"Unknown\",\"club\":null},\"lobbyId\":null,\"gameState\":\"Finished\",\"gameType\":\"LiveChallenge\",\"chatAccessToken\":\"redacted\",\"bannedPlayerIds\":null,\"mutedPlayerIds\":[],\"expiresAt\":\"2026-11-10T12:32:40Z\",\"timestamp\":\"2026-11-10T00:32:39.6442301Z\",\"partySettings\":{\"allowedCommunication\":\"TextMessages\",\"isolateInGameChat\":false,\"allowGuests\":true,\"allowSwitchingTeams\":true,\"maxPartySize\":100,\"masterControl\":false,\"masterControlAutoStartRounds\":false,\"hideJoinInfo\":false},\"maxAllowedPartySize\":100,\"gameSettings\":{\"forbidMoving\":false,\"forbidZooming\":false,\"forbidRotating\":false,\"guessMapType\":\"roadmap\",\"roundTime\":10,\"mapSlug\":\"world\",\"roundCount\":2,\"initialHealth\":6000,\"individualInitialHealth\":false,\"initialHealthTeamOne\":0,\"initialHealthTeamTwo\":0,\"timeAfterGuess\":15,\"multiplierIncrement\":0,\"disableHealing\":true,\"countAllGuesses\":false,\"maxRoundTime\":0,\"maxNumberOfRounds\":30,\"roundsWithoutDamageMultiplier\":1,\"roundWinMultiplierIncrement\":5,\"blinkMode\":false,\"blinkTimeTeamOne\":1000,\"blinkTimeTeamTwo\":1000,\"pointRushMaxRoundTime\":0,\"pointRushTimeAfterGuess\":15,\"pointRushHasFinal\":true,\"pointRushPointsToWin\":18000},\"joinCode\":{\"code\":\"FZ3OA\",\"resourceType\":\"PartiesV2\",\"resourceId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"expires\":\"2026-11-13T00:31:52Z\"},\"isCommunity\":false,\"communitySettings\":{\"language\":\"en\",\"gameModes\":[\"LiveChallenge\"],\"vibe\":\"Chill\"},\"isHostLess\":false}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:39.6442321Z"
+      }
+    },
+    {
+      "at": 39.22,
+      "socket": "party",
+      "frame": {
+        "code": "PartyMemberListUpdated",
+        "topic": "partyv2:507b2322-f328-4c1c-8965-cce89d744e4b",
+        "payload": "{\"partyId\":\"507b2322-f328-4c1c-8965-cce89d744e4b\",\"members\":[{\"nick\":\"Geobot\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000001\",\"team\":\"blue\",\"isGuest\":false,\"isPresent\":true,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":false,\"isEligibleAsOwner\":true,\"victories\":0,\"clientType\":\"Web\",\"club\":null},{\"nick\":\"Player 1\",\"flair\":0,\"pin\":\"pin/placeholder.png\",\"fullBodyPin\":\"pin/placeholder.png\",\"userId\":\"000000000000000000000002\",\"team\":\"red\",\"isGuest\":false,\"isPresent\":false,\"isPlaying\":false,\"isBenched\":false,\"benchReason\":null,\"isInCurrentGame\":false,\"isEligibleAsOwner\":false,\"victories\":1,\"clientType\":\"Web\",\"club\":null}],\"totalCount\":2}",
+        "accessToken": null,
+        "client": "Unknown",
+        "timestamp": "2026-11-10T00:32:40.6784163Z"
+      }
+    }
+  ]
+}

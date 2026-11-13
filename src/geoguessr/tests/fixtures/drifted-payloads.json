@@ -1,0 +1,66 @@
+{
+  "createResponse": {
+    "note": "bannedPlayerIds: null, expiresAt as a string (2026-08-14)",
+    "body": {
+      "partyId": "3926e7d3-310e-447d-90ff-94e57eab1798",
+      "owner": {
+        "nick": "Geobot",
+        "flair": 0,
+        "pin": "pin/placeholder.png",
+        "fullBodyPin": "pin/placeholder.png",
+        "userId": "000000000000000000000001",
+        "team": null,
+        "isGuest": false,
+        "isPresent": true,
+        "isPlaying": false,
+        "isBenched": false,
+        "isEligibleAsOwner": true,
+        "victories": 0,
+        "clientType": "Unknown",
+        "club": null
+      },
+      "lobbyId": null,
+      "gameState": "NoGame",
+      "gameType": "LiveChallenge",
+      "chatAccessToken": "redacted",
+      "bannedPlayerIds": null,
+      "mutedPlayerIds": [],
+      "expiresAt": "2026-08-14T19:09:35.0000000Z",
+      "timestamp": "2026-08-14T07:09:35.4812516Z",
+      "partySettings": {
+        "allowedCommunication": "TextMessages",
+        "isolateInGameChat": false,
+        "allowGuests": true,
+        "allowSwitchingTeams": true,
+        "maxPartySize": 100,
+        "masterControl": false,
+        "masterControlAutoStartRounds": false
+      },
+      "gameSettings": {
+        "forbidMoving": false,
+        "forbidZooming": false,
+        "forbidRotating": false,
+        "guessMapType": "roadmap",
+        "roundTime": 15,
+        "mapSlug": "world",
+        "roundCount": 3,
+        "individualInitialHealth": false,
+        "initialHealthTeamOne": 0,
+        "initialHealthTeamTwo": 0
+      },
+      "joinCode": {
+        "code": "MTXX8",
+        "resourceType": "PartiesV2",
+        "resourceId": "3926e7d3-310e-447d-90ff-94e57eab1798",
+        "expires": "2026-08-17T07:09:35.0000000"
+      },
+      "isCommunity": false,
+      "communitySettings": {
+        "language": "en",
+        "gameModes": ["LiveChallenge"],
+        "vibe": "Chill"
+      },
+      "isHostLess": false
+    }
+  }
+}
