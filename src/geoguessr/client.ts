@@ -1,289 +1,64 @@
-import * as z from "zod";
-
-import { logger } from "@/logger";
-
-import { type GameLobby, gameLobby } from "./game-lobby";
-import { type PartyLobby, partyLobby } from "./party-lobby";
+import type { ClientContext } from "./core/context";
+import { HttpClient } from "./core/http/http-client";
+import { WebClientIdentity } from "./core/identity";
+import { Lifetime } from "./core/lifetime";
+import { NotificationSocket } from "./core/notification-socket";
 import {
-  createLobbyRequest,
-  createLobbyResponse,
-} from "./schemas/create-lobby";
-import {
-  createPartyRequest,
-  createPartyResponse,
-} from "./schemas/create-party";
-import type { Member } from "./schemas/entities/member";
-import type { Party } from "./schemas/entities/party";
-import { initialProps } from "./schemas/initial-props";
+  type GeoGuessrOptions,
+  type ResolvedOptions,
+  resolveOptions,
+} from "./options";
+import { Parties } from "./resources/party/parties";
 
-export type { GameLobby } from "./game-lobby";
-export type { LiveChallengeLeaderboardEntry } from "./schemas/entities/live-challenge/leaderboards";
-export type { LiveChallengeState } from "./schemas/entities/live-challenge/state";
-export type {
-  GameLobbyEvent,
-  GameLobbyEventOf,
-} from "./schemas/game-lobby-event";
+/**
+ * The GeoGuessr SDK. Creating it does no I/O; sockets open when a party or a
+ * game needs one, and `close()` — or `await using` — shuts them all.
+ *
+ * ```ts
+ * await using geoguessr = new GeoGuessr();
+ *
+ * const party = await geoguessr.parties.current();
+ * const game = await party?.startGame();
+ * ```
+ */
+export class GeoGuessr implements AsyncDisposable {
+  readonly parties: Parties;
 
-export type CreatePartyOptions = z.input<typeof createPartyRequest>;
+  readonly #context: ClientContext;
 
-export const createGeoClient = async ({ cookies }: { cookies: string }) => {
-  let xClient: string | null = null;
-  let currentParty: Party | null = null;
-  let currentMembers: Member[] = [];
-  let currentPartyLobby: PartyLobby | null = null;
-  let currentGameId: string | null = null;
+  constructor(options?: GeoGuessrOptions) {
+    this.#context = createContext(resolveOptions(options));
+    this.parties = new Parties(this.#context);
+  }
 
-  const headers = (init?: RequestInit) => ({
-    "content-type": "application/json",
-    ...(xClient ? { "x-client": xClient } : {}),
-    cookie: cookies,
-    ...init?.headers,
-  });
+  /**
+   * Closes every party and game handle and the sockets behind them, waiting
+   * for each to close cleanly so nothing is left half-open when a Lambda
+   * freezes. Idempotent.
+   */
+  close(): Promise<void> {
+    return this.#context.lifetime.close(this.#context.notifications);
+  }
 
-  const request = async (base: string, path: string, init?: RequestInit) => {
-    const response = await fetch(`${base}${path}`, {
-      signal: AbortSignal.timeout(10000),
-      ...init,
-      headers: headers(init),
-    });
+  [Symbol.asyncDispose]() {
+    return this.close();
+  }
+}
 
-    const text = await response.clone().text();
-    let body: unknown;
-    try {
-      body = JSON.parse(text);
-    } catch {
-      body = text;
-    }
-
-    logger.info(`🌐 ${init?.method ?? "GET"} ${path}`, {
-      status: response.status,
-      url: response.url,
-      body,
-    });
-
-    return response;
-  };
-
-  const geoguessr = (path: string, init?: RequestInit) =>
-    request("https://www.geoguessr.com", path, init);
-
-  const gameServer = (path: string, init?: RequestInit) =>
-    request("https://game-server.geoguessr.com", path, init);
-
-  const connectPartyLobby = async (partyId: string) => {
-    currentPartyLobby?.close();
-    currentPartyLobby = null;
-
-    const lobby = partyLobby({ cookies, xClient, partyId });
-
-    try {
-      await lobby.ready;
-      currentPartyLobby = lobby;
-    } catch (error) {
-      logger.error("📡 Party lobby connection failed", { partyId, error });
-      lobby.close();
-    }
-  };
-
-  const refreshParty = async (): Promise<Party | null> => {
-    currentParty = null;
-    currentMembers = [];
-
-    const response = await geoguessr("/party");
-    const html = await response.text();
-    const nextData =
-      html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/)?.[1] ??
-      null;
-
-    if (!nextData) {
-      logger.warn("📄 __NEXT_DATA__ not found on party page", {
-        status: response.status,
-        url: response.url,
-      });
-
-      return null;
-    }
-
-    try {
-      const data: unknown = JSON.parse(nextData);
-
-      try {
-        const page = initialProps.parse(data);
-        logger.info("📄 Party page", { pageProps: page.props.pageProps });
-        xClient = page.buildId ? `web-${page.buildId}` : null;
-        currentParty = page.props.pageProps.initialParty ?? null;
-        currentMembers = page.props.pageProps.initialMemberInfo?.members ?? [];
-        if (currentParty) {
-          await connectPartyLobby(currentParty.partyId);
-        }
-      } catch (error) {
-        logger.error("📄 Failed to parse party page props", {
-          data,
-          reason:
-            error instanceof z.ZodError
-              ? z.prettifyError(error)
-              : String(error),
-        });
-      }
-    } catch (error) {
-      logger.error("📄 __NEXT_DATA__ unparsed", {
-        stage: "json",
-        reason: error instanceof Error ? error.message : String(error),
-        payload: nextData,
-      });
-    }
-
-    return currentParty;
-  };
-
-  await refreshParty();
+const createContext = (options: ResolvedOptions): ClientContext => {
+  const { logger, baseUrls } = options;
+  const identity = new WebClientIdentity(options.cookies);
 
   return {
-    currentParty: () => currentParty,
-
-    currentMembers: () => currentMembers,
-
-    refreshParty: () => refreshParty(),
-
-    disbandParty: async () => {
-      const response = await geoguessr("/api/v4/parties/v2/disband", {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        logger.warn("🎉 Could not disband party", {
-          status: response.status,
-          body: await response.text(),
-        });
-      }
-
-      currentParty = null;
-      currentMembers = [];
-      currentGameId = null;
-
-      if (currentPartyLobby) {
-        currentPartyLobby.close();
-        currentPartyLobby = null;
-      }
-    },
-
-    createParty: async (
-      options?: CreatePartyOptions,
-    ): Promise<Party | null> => {
-      const response = await geoguessr("/api/v4/parties/v2", {
-        method: "POST",
-        body: JSON.stringify(createPartyRequest.parse(options)),
-      });
-
-      if (!response.ok) {
-        logger.error("🎉 Could not create party", {
-          status: response.status,
-          body: await response.text(),
-        });
-
-        return null;
-      }
-
-      const body = await response.json();
-      let party: Party | null = null;
-
-      try {
-        party = createPartyResponse.parse(body);
-        await connectPartyLobby(party.partyId);
-        currentParty = party;
-        currentMembers = [party.owner];
-      } catch (error) {
-        logger.error("🎉 Unexpected create-party response", {
-          status: response.status,
-          body,
-          reason:
-            error instanceof z.ZodError
-              ? z.prettifyError(error)
-              : String(error),
-        });
-      }
-
-      return party;
-    },
-
-    createGameLobby: async (): Promise<GameLobby | null> => {
-      if (!currentParty) {
-        logger.error("🎲 Cannot create a game lobby without a party");
-        return null;
-      }
-
-      if (!currentPartyLobby) {
-        logger.error("🎲 Cannot create a game lobby without a party lobby");
-        return null;
-      }
-
-      const { partyId, owner } = currentParty;
-
-      const response = await gameServer(`/api/parties/v2/${partyId}/lobby`, {
-        method: "POST",
-        body: JSON.stringify(createLobbyRequest.parse({})),
-      });
-
-      if (!response.ok) {
-        logger.warn("🎲 Could not create game lobby", {
-          status: response.status,
-          body: await response.text(),
-        });
-
-        return null;
-      }
-
-      const body = await response.json();
-
-      try {
-        const { gameLobbyId } = createLobbyResponse.parse(body);
-        currentGameId = gameLobbyId;
-
-        logger.info("🎲 Game lobby created", { gameId: gameLobbyId });
-
-        return gameLobby({
-          cookies,
-          xClient,
-          gameId: gameLobbyId,
-          playerId: owner.userId,
-        });
-      } catch (error) {
-        logger.error("🎲 Unexpected create-lobby response", {
-          status: response.status,
-          body,
-          reason:
-            error instanceof z.ZodError
-              ? z.prettifyError(error)
-              : String(error),
-        });
-
-        return null;
-      }
-    },
-
-    advanceRound: async (toRoundNumber: number): Promise<boolean> => {
-      if (!currentGameId) {
-        logger.error("🎲 Cannot advance round without a game lobby");
-        return false;
-      }
-
-      const response = await gameServer(
-        `/api/live-challenge/${currentGameId}/advance-round`,
-        { method: "POST", body: JSON.stringify({ toRoundNumber }) },
-      );
-
-      if (response.ok) {
-        logger.info(`🎲 Advanced to round ${toRoundNumber}`);
-      } else {
-        logger.warn(`🎲 Failed to advance to round ${toRoundNumber}`, {
-          status: response.status,
-          body: await response.text(),
-        });
-      }
-
-      return response.ok;
-    },
+    identity,
+    http: new HttpClient(identity, options),
+    notifications: new NotificationSocket({
+      url: baseUrls.notificationSocket,
+      identity,
+      logger,
+    }),
+    lifetime: new Lifetime(logger),
+    logger,
+    baseUrls,
   };
 };
-
-export type GeoClient = Awaited<ReturnType<typeof createGeoClient>>;
