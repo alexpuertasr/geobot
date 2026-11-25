@@ -13,8 +13,8 @@ import {
   createPartyResponse,
 } from "./schemas/create-party";
 import type { Member } from "./schemas/entities/member";
-import type { Party } from "./schemas/entities/party";
-import { initialProps } from "./schemas/initial-props";
+import { type Party, party } from "./schemas/entities/party";
+import { partyMembersResponse } from "./schemas/party-members";
 
 export type { GameLobby } from "./game-lobby";
 export type { LiveChallengeLeaderboardEntry } from "./schemas/entities/live-challenge/leaderboards";
@@ -85,65 +85,87 @@ export const createGeoClient = async ({ cookies }: { cookies: string }) => {
     }
   };
 
-  const refreshParty = async (): Promise<Party | null> => {
-    currentParty = null;
-    currentMembers = [];
-
+  const loadXClient = async () => {
     const response = await geoguessr("/party");
-    const html = await response.text();
-    const nextData =
-      html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/)?.[1] ??
-      null;
+    const buildId = (await response.text()).match(
+      /__GEOGUESSR_BUILD_ID__\s*=\s*"([^"]+)"/,
+    )?.[1];
 
-    if (!nextData) {
-      logger.warn("📄 __NEXT_DATA__ not found on party page", {
+    if (!buildId) {
+      logger.warn("📄 Build id not found on party page", {
         status: response.status,
         url: response.url,
       });
-
-      return null;
     }
 
-    try {
-      const data: unknown = JSON.parse(nextData);
-
-      try {
-        const page = initialProps.parse(data);
-        logger.info("📄 Party page", { pageProps: page.props.pageProps });
-        xClient = page.buildId ? `web-${page.buildId}` : null;
-        currentParty = page.props.pageProps.initialParty ?? null;
-        currentMembers = page.props.pageProps.initialMemberInfo?.members ?? [];
-        if (currentParty) {
-          await connectPartyLobby(currentParty.partyId);
-        }
-      } catch (error) {
-        logger.error("📄 Failed to parse party page props", {
-          data,
-          reason:
-            error instanceof z.ZodError
-              ? z.prettifyError(error)
-              : String(error),
-        });
-      }
-    } catch (error) {
-      logger.error("📄 __NEXT_DATA__ unparsed", {
-        stage: "json",
-        reason: error instanceof Error ? error.message : String(error),
-        payload: nextData,
-      });
-    }
-
-    return currentParty;
+    xClient = buildId ? `web-${buildId}` : null;
   };
 
-  await refreshParty();
+  const loadParty = async () => {
+    const response = await geoguessr("/api/v4/parties/v2/active");
+
+    if (response.status === 204) return;
+
+    if (!response.ok) {
+      logger.warn("🎉 Could not fetch the active party", {
+        status: response.status,
+      });
+
+      return;
+    }
+
+    const body = await response.json();
+    const active = party.safeParse(body);
+
+    if (!active.success) {
+      logger.error("🎉 Unexpected active-party response", {
+        body,
+        reason: z.prettifyError(active.error),
+      });
+
+      return;
+    }
+
+    currentParty = active.data;
+    currentMembers = await loadMembers(active.data);
+    await connectPartyLobby(active.data.partyId);
+  };
+
+  const loadMembers = async ({ partySettings }: Party): Promise<Member[]> => {
+    const response = await geoguessr(
+      `/api/v4/parties/v2/members?page=0&count=${partySettings.maxPartySize}`,
+    );
+
+    if (!response.ok) {
+      logger.warn("🎉 Could not fetch party members", {
+        status: response.status,
+      });
+
+      return [];
+    }
+
+    const body = await response.json();
+    const members = partyMembersResponse.safeParse(body);
+
+    if (!members.success) {
+      logger.error("🎉 Unexpected party-members response", {
+        body,
+        reason: z.prettifyError(members.error),
+      });
+
+      return [];
+    }
+
+    return members.data.members;
+  };
+
+  await loadXClient();
+  await loadParty();
 
   return {
     currentParty: () => currentParty,
 
     currentMembers: () => currentMembers,
-
-    refreshParty: () => refreshParty(),
 
     disbandParty: async () => {
       const response = await geoguessr("/api/v4/parties/v2/disband", {
